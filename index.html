@@ -1,0 +1,2011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MealPilot — Your Nigerian Kitchen Companion</title>
+<meta name="description" content="Plan meals, track food budgets, and discover Nigerian recipes with MealPilot.">
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root {
+  --green:       #0E7A3D;
+  --green-light: #E8F5EE;
+  --green-dark:  #095C2D;
+  --orange:      #F59E0B;
+  --orange-light:#FEF3C7;
+  --orange-dark: #D97706;
+  --cream:       #FFF8EE;
+  --white:       #FFFFFF;
+  --gray-50:     #F9FAFB;
+  --gray-100:    #F3F4F6;
+  --gray-200:    #E5E7EB;
+  --gray-400:    #9CA3AF;
+  --gray-600:    #6B7280;
+  --gray-800:    #1F2937;
+  --gray-900:    #111827;
+  --red:         #EF4444;
+  --red-light:   #FEE2E2;
+  --blue:        #3B82F6;
+  --blue-light:  #EFF6FF;
+  --purple:      #8B5CF6;
+  --shadow-sm:   0 1px 2px rgba(0,0,0,0.05);
+  --shadow:      0 2px 8px rgba(0,0,0,0.08);
+  --shadow-md:   0 4px 16px rgba(0,0,0,0.10);
+  --shadow-lg:   0 8px 32px rgba(0,0,0,0.12);
+  --radius-sm:   6px;
+  --radius:      12px;
+  --radius-lg:   18px;
+  --radius-xl:   24px;
+  --font-body:   'Segoe UI', system-ui, -apple-system, sans-serif;
+  --transition:  0.2s ease;
+  --nav-h:       64px;
+}
+[data-theme="dark"] {
+  --cream:       #111827;
+  --white:       #1F2937;
+  --gray-50:     #1F2937;
+  --gray-100:    #374151;
+  --gray-200:    #4B5563;
+  --gray-400:    #9CA3AF;
+  --gray-600:    #D1D5DB;
+  --gray-800:    #F3F4F6;
+  --gray-900:    #F9FAFB;
+  --green-light: #064E23;
+  --orange-light:#451A03;
+  --shadow:      0 2px 8px rgba(0,0,0,0.3);
+  --shadow-md:   0 4px 16px rgba(0,0,0,0.4);
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--cream);
+  color: var(--gray-900);
+  min-height: 100vh;
+  transition: background var(--transition), color var(--transition);
+  padding-bottom: calc(var(--nav-h) + 16px);
+}
+img { max-width: 100%; display: block; }
+button { cursor: pointer; border: none; background: none; font-family: inherit; }
+input, select, textarea {
+  font-family: inherit;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  background: var(--white);
+  color: var(--gray-900);
+  font-size: 0.95rem;
+  width: 100%;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(14,122,61,0.12);
+}
+h1,h2,h3,h4,h5 { line-height: 1.25; }
+a { color: var(--green); text-decoration: none; }
+
+/* ============================================================
+   TOP BAR
+   ============================================================ */
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: 56px;
+  background: var(--white);
+  box-shadow: var(--shadow);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16px;
+}
+.topbar-brand {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 700; font-size: 1.2rem; color: var(--green);
+}
+.topbar-brand span { color: var(--orange); }
+.topbar-actions { display: flex; align-items: center; gap: 8px; }
+.icon-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--gray-100); color: var(--gray-800);
+  font-size: 1.1rem; transition: background var(--transition);
+}
+.icon-btn:hover { background: var(--gray-200); }
+
+/* ============================================================
+   BOTTOM NAV
+   ============================================================ */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  height: var(--nav-h);
+  background: var(--white);
+  box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+  display: flex; align-items: center;
+  padding: 0 4px;
+}
+.nav-item {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 3px;
+  padding: 8px 4px;
+  color: var(--gray-400);
+  font-size: 0.65rem; font-weight: 600;
+  letter-spacing: 0.02em; text-transform: uppercase;
+  transition: color var(--transition);
+  border-radius: var(--radius-sm);
+}
+.nav-item.active { color: var(--green); }
+.nav-item svg { width: 22px; height: 22px; }
+.nav-item.active svg path, .nav-item.active svg rect, .nav-item.active svg circle,
+.nav-item.active svg polyline, .nav-item.active svg line { stroke: var(--green); }
+
+/* ============================================================
+   PAGES
+   ============================================================ */
+.page { display: none; padding: 72px 0 16px; min-height: 100vh; }
+.page.active { display: block; }
+.page-inner { max-width: 600px; margin: 0 auto; padding: 0 16px; }
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+.card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  transition: box-shadow var(--transition);
+}
+.card:hover { box-shadow: var(--shadow-md); }
+.card-sm { padding: 14px 16px; }
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 20px; border-radius: var(--radius);
+  font-size: 0.9rem; font-weight: 600; transition: all var(--transition);
+}
+.btn-primary {
+  background: var(--green); color: #fff;
+  box-shadow: 0 2px 8px rgba(14,122,61,0.3);
+}
+.btn-primary:hover { background: var(--green-dark); box-shadow: 0 4px 12px rgba(14,122,61,0.4); }
+.btn-orange {
+  background: var(--orange); color: #fff;
+  box-shadow: 0 2px 8px rgba(245,158,11,0.3);
+}
+.btn-orange:hover { background: var(--orange-dark); }
+.btn-outline {
+  background: transparent; color: var(--green);
+  border: 1.5px solid var(--green);
+}
+.btn-outline:hover { background: var(--green-light); }
+.btn-ghost {
+  background: var(--gray-100); color: var(--gray-800);
+}
+.btn-ghost:hover { background: var(--gray-200); }
+.btn-full { width: 100%; }
+.btn-sm { padding: 6px 14px; font-size: 0.82rem; border-radius: var(--radius-sm); }
+.btn-danger { background: var(--red); color: #fff; }
+
+/* ============================================================
+   BADGES
+   ============================================================ */
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 999px;
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.03em;
+}
+.badge-green { background: var(--green-light); color: var(--green-dark); }
+.badge-orange { background: var(--orange-light); color: var(--orange-dark); }
+.badge-blue { background: var(--blue-light); color: var(--blue); }
+.badge-gray { background: var(--gray-100); color: var(--gray-600); }
+
+/* ============================================================
+   SECTION HEADERS
+   ============================================================ */
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.section-title { font-size: 1rem; font-weight: 700; color: var(--gray-900); }
+.section-sub { font-size: 0.8rem; color: var(--gray-600); margin-top: 2px; }
+
+/* ============================================================
+   HOME PAGE
+   ============================================================ */
+.home-hero {
+  background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+  border-radius: var(--radius-xl);
+  padding: 28px 24px;
+  color: #fff;
+  margin-bottom: 20px;
+  position: relative; overflow: hidden;
+}
+.home-hero::after {
+  content: '🍽️';
+  position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+  font-size: 3.5rem; opacity: 0.2;
+}
+.home-hero h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: 6px; }
+.home-hero p { font-size: 0.9rem; opacity: 0.85; }
+.home-hero .day-chip {
+  display: inline-block; background: rgba(255,255,255,0.2);
+  border-radius: 999px; padding: 3px 10px;
+  font-size: 0.75rem; font-weight: 600; margin-top: 10px;
+}
+
+.quick-actions {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 12px; margin-bottom: 20px;
+}
+.qa-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 18px 16px;
+  box-shadow: var(--shadow);
+  display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+.qa-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.qa-icon { font-size: 1.8rem; }
+.qa-title { font-size: 0.85rem; font-weight: 700; color: var(--gray-800); }
+.qa-sub { font-size: 0.73rem; color: var(--gray-600); }
+
+.tip-card {
+  background: linear-gradient(135deg, var(--orange-light), #fff9e6);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  border-left: 4px solid var(--orange);
+  margin-bottom: 20px;
+}
+.tip-card h4 { font-size: 0.85rem; color: var(--orange-dark); margin-bottom: 4px; }
+.tip-card p { font-size: 0.82rem; color: var(--gray-700, #374151); }
+
+/* ============================================================
+   PLANNER PAGE
+   ============================================================ */
+.day-tabs {
+  display: flex; gap: 6px;
+  overflow-x: auto; padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  margin-bottom: 16px;
+}
+.day-tabs::-webkit-scrollbar { display: none; }
+.day-tab {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: var(--radius);
+  font-size: 0.8rem; font-weight: 600;
+  background: var(--white);
+  color: var(--gray-600);
+  box-shadow: var(--shadow-sm);
+  border: 1.5px solid var(--gray-200);
+  transition: all var(--transition);
+}
+.day-tab.active {
+  background: var(--green); color: #fff;
+  border-color: var(--green);
+  box-shadow: 0 2px 8px rgba(14,122,61,0.3);
+}
+
+.meal-slot {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+  border: 1.5px solid var(--gray-200);
+  margin-bottom: 10px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.meal-slot-info { flex: 1; min-width: 0; }
+.meal-slot-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gray-400); margin-bottom: 4px; }
+.meal-slot-name { font-size: 0.9rem; font-weight: 600; color: var(--gray-800); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.meal-slot-cost { font-size: 0.75rem; color: var(--green); font-weight: 600; margin-top: 2px; }
+.meal-slot-empty { color: var(--gray-400); font-size: 0.85rem; }
+.meal-slot-actions { display: flex; gap: 6px; flex-shrink: 0; margin-left: 10px; }
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: flex-end;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal-sheet {
+  background: var(--white);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  padding: 24px 20px;
+  width: 100%; max-height: 90vh; overflow-y: auto;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.modal-overlay.open .modal-sheet { transform: translateY(0); }
+.modal-handle {
+  width: 40px; height: 4px; background: var(--gray-200);
+  border-radius: 999px; margin: 0 auto 20px;
+}
+.modal-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 16px; color: var(--gray-900); }
+
+/* ============================================================
+   SEARCH BAR
+   ============================================================ */
+.search-bar {
+  position: relative; margin-bottom: 14px;
+}
+.search-bar input { padding-left: 38px; }
+.search-icon {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  color: var(--gray-400); font-size: 1rem;
+}
+
+/* ============================================================
+   MEAL GRID
+   ============================================================ */
+.meal-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+.meal-card-pick {
+  background: var(--white);
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 12px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.meal-card-pick:hover, .meal-card-pick.selected {
+  border-color: var(--green);
+  background: var(--green-light);
+}
+.meal-card-pick h4 { font-size: 0.82rem; font-weight: 700; color: var(--gray-800); margin-bottom: 4px; }
+.meal-card-pick .cost { font-size: 0.75rem; color: var(--green); font-weight: 600; }
+.meal-card-pick .cat { font-size: 0.68rem; color: var(--gray-400); }
+
+/* ============================================================
+   CATEGORY FILTER
+   ============================================================ */
+.cat-filter {
+  display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;
+  scrollbar-width: none; margin-bottom: 14px;
+}
+.cat-filter::-webkit-scrollbar { display: none; }
+.cat-btn {
+  flex-shrink: 0; padding: 6px 14px;
+  border-radius: 999px; font-size: 0.78rem; font-weight: 600;
+  background: var(--gray-100); color: var(--gray-600);
+  transition: all var(--transition);
+}
+.cat-btn.active { background: var(--green); color: #fff; }
+
+/* ============================================================
+   SHOPPING LIST PAGE
+   ============================================================ */
+.shopping-group { margin-bottom: 18px; }
+.shopping-group-title {
+  font-size: 0.75rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--green); margin-bottom: 8px;
+  padding-left: 4px; border-left: 3px solid var(--green); padding-left: 8px;
+}
+.shopping-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+  background: var(--white);
+  border-radius: var(--radius-sm);
+  margin-bottom: 6px;
+  box-shadow: var(--shadow-sm);
+}
+.shopping-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--green); flex-shrink: 0; }
+.shopping-item.checked span { text-decoration: line-through; color: var(--gray-400); }
+.shopping-item span { font-size: 0.88rem; color: var(--gray-800); flex: 1; }
+.shopping-item .qty { font-size: 0.75rem; color: var(--gray-400); }
+
+/* ============================================================
+   BUDGET PAGE
+   ============================================================ */
+.budget-option {
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+  border: 1.5px solid var(--gray-200);
+  background: var(--white);
+}
+.budget-option.recommended { border-color: var(--green); }
+.budget-option-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.budget-option h4 { font-size: 0.92rem; font-weight: 700; }
+.budget-amount { font-size: 1.3rem; font-weight: 800; color: var(--green); }
+.budget-bar { height: 6px; background: var(--gray-100); border-radius: 999px; margin-top: 8px; }
+.budget-bar-fill { height: 100%; border-radius: 999px; background: var(--green); transition: width 0.5s ease; }
+
+/* ============================================================
+   BUDGET TOOL (What Can I Cook)
+   ============================================================ */
+.budget-input-hero {
+  background: linear-gradient(135deg, var(--orange) 0%, var(--orange-dark) 100%);
+  border-radius: var(--radius-xl);
+  padding: 24px 20px;
+  color: #fff; margin-bottom: 20px; text-align: center;
+}
+.budget-input-hero h2 { font-size: 1.2rem; font-weight: 800; margin-bottom: 6px; }
+.budget-input-hero p { font-size: 0.85rem; opacity: 0.9; margin-bottom: 16px; }
+.naira-input-wrap {
+  display: flex; align-items: center;
+  background: rgba(255,255,255,0.15);
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1.5px solid rgba(255,255,255,0.4);
+}
+.naira-sign {
+  padding: 12px 14px; font-size: 1.1rem; font-weight: 800; color: #fff;
+  background: rgba(255,255,255,0.15); border-right: 1.5px solid rgba(255,255,255,0.3);
+}
+.naira-input-wrap input {
+  border: none; background: transparent; color: #fff;
+  font-size: 1.2rem; font-weight: 700;
+  padding: 12px 14px; border-radius: 0; box-shadow: none;
+}
+.naira-input-wrap input::placeholder { color: rgba(255,255,255,0.6); }
+.naira-input-wrap input:focus { box-shadow: none; }
+.preset-amounts {
+  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 12px;
+}
+.preset-btn {
+  background: rgba(255,255,255,0.2); color: #fff;
+  border: 1.5px solid rgba(255,255,255,0.4);
+  border-radius: 999px; padding: 5px 14px;
+  font-size: 0.8rem; font-weight: 600;
+  transition: background var(--transition);
+}
+.preset-btn:hover { background: rgba(255,255,255,0.35); }
+
+.suggested-meal-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 10px;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+}
+.smc-info h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 4px; }
+.smc-info p { font-size: 0.78rem; color: var(--gray-600); }
+.smc-cost { font-size: 1rem; font-weight: 800; color: var(--green); white-space: nowrap; }
+
+/* ============================================================
+   INGREDIENT MATCHER
+   ============================================================ */
+.ingredient-tags {
+  display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0;
+}
+.ing-tag {
+  background: var(--green-light); color: var(--green-dark);
+  padding: 4px 12px; border-radius: 999px; font-size: 0.8rem; font-weight: 600;
+  display: flex; align-items: center; gap: 6px;
+}
+.ing-tag button { color: var(--green); font-weight: 800; font-size: 1rem; line-height: 1; }
+
+.match-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 10px;
+}
+.match-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.match-title { font-size: 0.9rem; font-weight: 700; }
+.match-percent { font-size: 0.85rem; font-weight: 800; color: var(--green); }
+.match-bar-wrap { height: 5px; background: var(--gray-100); border-radius: 999px; margin-bottom: 8px; }
+.match-bar-fill { height: 100%; border-radius: 999px; background: var(--green); }
+.match-missing { font-size: 0.75rem; color: var(--gray-600); }
+
+/* ============================================================
+   RECIPE CARDS
+   ============================================================ */
+.recipe-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 14px;
+  transition: box-shadow var(--transition);
+}
+.recipe-card:hover { box-shadow: var(--shadow-md); }
+.recipe-card-thumb {
+  height: 120px;
+  background: linear-gradient(135deg, var(--green-light), var(--orange-light));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3rem;
+}
+.recipe-card-body { padding: 14px 16px; }
+.recipe-card-body h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; }
+.recipe-meta {
+  display: flex; gap: 10px; margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.recipe-meta-item { font-size: 0.75rem; color: var(--gray-600); display: flex; align-items: center; gap: 4px; }
+.recipe-preview { font-size: 0.8rem; color: var(--gray-600); margin-bottom: 10px; }
+
+/* Recipe detail */
+.recipe-detail { padding: 0; }
+.recipe-detail .thumb {
+  height: 180px;
+  background: linear-gradient(135deg, var(--green-light), var(--orange-light));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 5rem;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  margin-bottom: 16px;
+}
+.recipe-step {
+  display: flex; gap: 12px; margin-bottom: 14px;
+}
+.step-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--green); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; font-weight: 700; flex-shrink: 0;
+}
+.step-text { font-size: 0.85rem; color: var(--gray-800); line-height: 1.5; padding-top: 4px; }
+
+/* ============================================================
+   TRACKER
+   ============================================================ */
+.tracker-summary {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px;
+}
+.tracker-stat {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 14px 12px;
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+.tracker-stat .val { font-size: 1.1rem; font-weight: 800; color: var(--green); }
+.tracker-stat .lbl { font-size: 0.68rem; color: var(--gray-600); margin-top: 3px; }
+
+.progress-bar-wrap { background: var(--gray-100); border-radius: 999px; height: 8px; margin: 6px 0; }
+.progress-bar-fill { height: 100%; border-radius: 999px; transition: width 0.6s ease; }
+
+.expense-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px;
+  background: var(--white); border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm); margin-bottom: 8px;
+}
+.expense-info h4 { font-size: 0.88rem; font-weight: 600; }
+.expense-info p { font-size: 0.75rem; color: var(--gray-600); }
+.expense-amount { font-size: 0.95rem; font-weight: 700; color: var(--gray-800); }
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+.toast-container {
+  position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+  z-index: 999; display: flex; flex-direction: column; gap: 8px; align-items: center;
+}
+.toast {
+  background: var(--gray-900); color: #fff;
+  padding: 10px 20px; border-radius: var(--radius);
+  font-size: 0.85rem; font-weight: 600;
+  box-shadow: var(--shadow-md);
+  animation: slideDown 0.3s ease, fadeOut 0.3s ease 2.5s forwards;
+  white-space: nowrap;
+}
+.toast.success { background: var(--green); }
+.toast.error { background: var(--red); }
+@keyframes slideDown { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:none; } }
+@keyframes fadeOut { to { opacity:0; pointer-events:none; } }
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+.empty-state {
+  text-align: center; padding: 40px 20px;
+  color: var(--gray-400);
+}
+.empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+.empty-state h3 { font-size: 0.95rem; font-weight: 600; color: var(--gray-600); margin-bottom: 6px; }
+.empty-state p { font-size: 0.82rem; color: var(--gray-400); }
+
+/* ============================================================
+   FAVORITES
+   ============================================================ */
+.fav-btn { font-size: 1.2rem; background: none; border: none; cursor: pointer; }
+
+/* ============================================================
+   RESPONSIVE HELPERS
+   ============================================================ */
+.mt-8 { margin-top: 8px; }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+.mb-16 { margin-bottom: 16px; }
+.flex { display: flex; }
+.flex-center { display: flex; align-items: center; }
+.gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; }
+.fw-700 { font-weight: 700; }
+.text-sm { font-size: 0.82rem; }
+.text-green { color: var(--green); }
+.text-orange { color: var(--orange); }
+.text-gray { color: var(--gray-600); }
+
+/* ============================================================
+   PRINT STYLES
+   ============================================================ */
+@media print {
+  .topbar, .bottom-nav, .btn, .modal-overlay { display: none !important; }
+  .page { display: block !important; padding: 0; }
+  body { padding: 0; background: #fff; }
+}
+
+/* ============================================================
+   MINI CHART (CSS only)
+   ============================================================ */
+.mini-chart {
+  display: flex; align-items: flex-end; gap: 4px;
+  height: 60px; padding: 0 4px;
+}
+.mini-chart-bar {
+  flex: 1; border-radius: 4px 4px 0 0;
+  background: var(--green); opacity: 0.7;
+  min-height: 4px; transition: height 0.4s ease;
+}
+.mini-chart-bar:nth-child(even) { background: var(--orange); }
+
+/* Scrollable section */
+.scroll-x { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; }
+.scroll-x::-webkit-scrollbar { display: none; }
+
+/* Divider */
+.divider { height: 1px; background: var(--gray-100); margin: 16px 0; }
+</style>
+</head>
+<body data-theme="light">
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-brand">
+    🍲 Meal<span>Pilot</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="icon-btn" onclick="toggleDark()" title="Toggle dark mode" id="darkBtn">🌙</button>
+    <button class="icon-btn" onclick="showFavorites()" title="Favorites">❤️</button>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="showPage('home')" id="nav-home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Home
+  </button>
+  <button class="nav-item" onclick="showPage('planner')" id="nav-planner">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Planner
+  </button>
+  <button class="nav-item" onclick="showPage('cook')" id="nav-cook">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2h18v6a9 9 0 01-18 0V2z"/><path d="M12 8v14"/><path d="M8 22h8"/></svg>
+    Cook
+  </button>
+  <button class="nav-item" onclick="showPage('recipes')" id="nav-recipes">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+    Recipes
+  </button>
+  <button class="nav-item" onclick="showPage('tracker')" id="nav-tracker">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Budget
+  </button>
+</nav>
+
+<!-- ============================================================
+     PAGE: HOME
+     ============================================================ -->
+<div class="page active" id="page-home">
+  <div class="page-inner">
+    <div class="home-hero">
+      <div class="day-chip" id="todayChip">Loading...</div>
+      <h1>Good morning! 👋</h1>
+      <p>What are you cooking today? Let MealPilot guide you.</p>
+    </div>
+
+    <div class="quick-actions">
+      <div class="qa-card" onclick="showPage('cook'); switchCookTab('budget')">
+        <div class="qa-icon">💰</div>
+        <div class="qa-title">What Can I Cook?</div>
+        <div class="qa-sub">Enter your budget</div>
+      </div>
+      <div class="qa-card" onclick="showPage('cook'); switchCookTab('ingredients')">
+        <div class="qa-icon">🧺</div>
+        <div class="qa-title">Use What I Have</div>
+        <div class="qa-sub">Match ingredients</div>
+      </div>
+      <div class="qa-card" onclick="showPage('planner')">
+        <div class="qa-icon">📅</div>
+        <div class="qa-title">Weekly Planner</div>
+        <div class="qa-sub">Plan meals ahead</div>
+      </div>
+      <div class="qa-card" onclick="showPage('tracker'); switchTrackerTab('shopping')">
+        <div class="qa-icon">🛒</div>
+        <div class="qa-title">Shopping List</div>
+        <div class="qa-sub">Auto-generated</div>
+      </div>
+    </div>
+
+    <div class="tip-card" id="homeTip">
+      <h4>💡 Nigerian Kitchen Tip</h4>
+      <p id="tipText">Loading tip...</p>
+    </div>
+
+    <div class="section-header">
+      <div>
+        <div class="section-title">Today's Meal Plan</div>
+        <div class="section-sub" id="todaySubtitle">Set up your weekly meal plan</div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="showPage('planner')">Edit</button>
+    </div>
+    <div id="todayMeals"></div>
+
+    <div class="divider"></div>
+
+    <div class="section-header mt-8">
+      <div class="section-title">Popular Recipes</div>
+      <button class="btn btn-ghost btn-sm" onclick="showPage('recipes')">See all</button>
+    </div>
+    <div class="scroll-x" id="popularRecipes"></div>
+
+    <div class="divider"></div>
+
+    <div class="section-header">
+      <div class="section-title">❤️ Favourite Meals</div>
+    </div>
+    <div id="homeFavorites"></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE: PLANNER
+     ============================================================ -->
+<div class="page" id="page-planner">
+  <div class="page-inner">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Weekly Meal Planner</div>
+        <div class="section-sub">Tap a meal slot to choose or add a meal</div>
+      </div>
+      <button class="btn btn-sm btn-ghost" onclick="clearWeekPlan()">🗑 Clear</button>
+    </div>
+
+    <div class="day-tabs" id="dayTabs"></div>
+    <div id="dayMealSlots"></div>
+
+    <div class="divider"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="showPage('tracker'); switchTrackerTab('shopping')">🛒 Generate Shopping List</button>
+      <button class="btn btn-outline" onclick="exportPlanPDF()">📄 Export PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE: COOK (Budget + Ingredient Matcher)
+     ============================================================ -->
+<div class="page" id="page-cook">
+  <div class="page-inner">
+    <div class="cat-filter" style="margin-bottom:20px;">
+      <button class="cat-btn active" onclick="switchCookTab('budget',this)">💰 Budget Meals</button>
+      <button class="cat-btn" onclick="switchCookTab('ingredients',this)">🧺 Use My Ingredients</button>
+      <button class="cat-btn" onclick="switchCookTab('estimate',this)">📊 Budget Estimator</button>
+    </div>
+
+    <!-- Budget Meals -->
+    <div id="cook-budget">
+      <div class="budget-input-hero">
+        <h2>🔥 What food can I cook today?</h2>
+        <p>Enter any amount — we'll find meals you can afford right now</p>
+        <div class="naira-input-wrap">
+          <span class="naira-sign">₦</span>
+          <input type="number" id="budgetAmount" placeholder="e.g. 2500" min="100" oninput="suggestBudgetMeals()">
+        </div>
+        <div class="preset-amounts">
+          <button class="preset-btn" onclick="setBudget(1000)">₦1,000</button>
+          <button class="preset-btn" onclick="setBudget(2000)">₦2,000</button>
+          <button class="preset-btn" onclick="setBudget(5000)">₦5,000</button>
+          <button class="preset-btn" onclick="setBudget(10000)">₦10,000</button>
+          <button class="preset-btn" onclick="setBudget(20000)">₦20,000</button>
+        </div>
+      </div>
+      <div id="budgetResults"></div>
+    </div>
+
+    <!-- Ingredient Matcher -->
+    <div id="cook-ingredients" style="display:none;">
+      <div class="card mb-16">
+        <h3 class="section-title mb-16" style="margin-bottom:12px;">🧺 What's in your kitchen?</h3>
+        <p class="text-sm text-gray" style="margin-bottom:12px;">Type an ingredient and press Enter or comma</p>
+        <input type="text" id="ingInput" placeholder="e.g. tomatoes, onions, egg..." onkeydown="handleIngInput(event)">
+        <div class="ingredient-tags mt-8" id="ingTags"></div>
+        <button class="btn btn-primary btn-full mt-12" onclick="matchIngredients()">Find Meals I Can Cook</button>
+      </div>
+      <div id="matchResults"></div>
+    </div>
+
+    <!-- Budget Estimator -->
+    <div id="cook-estimate" style="display:none;">
+      <div class="card mb-16">
+        <h3 class="section-title" style="margin-bottom:14px;">📊 Food Budget Estimator</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+          <div>
+            <label class="text-sm fw-700" style="display:block;margin-bottom:6px;">Adults</label>
+            <input type="number" id="estAdults" value="2" min="1" max="20" onchange="calcEstimate()">
+          </div>
+          <div>
+            <label class="text-sm fw-700" style="display:block;margin-bottom:6px;">Children</label>
+            <input type="number" id="estChildren" value="0" min="0" max="20" onchange="calcEstimate()">
+          </div>
+          <div>
+            <label class="text-sm fw-700" style="display:block;margin-bottom:6px;">Days</label>
+            <input type="number" id="estDays" value="7" min="1" max="30" onchange="calcEstimate()">
+          </div>
+          <div>
+            <label class="text-sm fw-700" style="display:block;margin-bottom:6px;">Meals/Day</label>
+            <select id="estMeals" onchange="calcEstimate()">
+              <option value="2">2 meals</option>
+              <option value="3" selected>3 meals</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div id="estimateResults"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE: RECIPES
+     ============================================================ -->
+<div class="page" id="page-recipes">
+  <div class="page-inner">
+    <div class="section-header">
+      <div class="section-title">Nigerian Recipes</div>
+    </div>
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Search recipes..." oninput="filterRecipes(this.value)" id="recipeSearch">
+    </div>
+    <div class="cat-filter" id="recipeCatFilter"></div>
+    <div id="recipeGrid"></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE: BUDGET TRACKER
+     ============================================================ -->
+<div class="page" id="page-tracker">
+  <div class="page-inner">
+    <div class="cat-filter" style="margin-bottom:20px;">
+      <button class="cat-btn active" onclick="switchTrackerTab('tracker',this)">📊 Tracker</button>
+      <button class="cat-btn" onclick="switchTrackerTab('shopping',this)">🛒 Shopping List</button>
+    </div>
+
+    <!-- Tracker -->
+    <div id="tracker-tracker">
+      <div class="tracker-summary" id="trackerSummary"></div>
+
+      <div class="card mb-16">
+        <h4 class="section-title" style="margin-bottom:12px;">Log Expense</h4>
+        <input type="text" id="expenseDesc" placeholder="What did you buy? e.g. tomatoes, chicken..." style="margin-bottom:10px;">
+        <div style="display:flex;gap:10px;">
+          <input type="number" id="expenseAmount" placeholder="Amount (₦)" min="0">
+          <button class="btn btn-primary" onclick="logExpense()">Add</button>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <div class="section-title">This Week's Spending</div>
+        <button class="btn btn-sm btn-ghost" onclick="clearExpenses()">Clear</button>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:0.78rem;color:var(--gray-600);margin-bottom:6px;">Weekly budget usage</div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" id="weeklyProgress" style="width:0%;background:var(--green);"></div></div>
+      </div>
+      <div class="mini-chart" id="miniChart"></div>
+      <div class="divider"></div>
+      <div id="expenseList"></div>
+    </div>
+
+    <!-- Shopping List -->
+    <div id="tracker-shopping" style="display:none;">
+      <div class="section-header">
+        <div class="section-title">Shopping List</div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-sm btn-ghost" onclick="printShopping()">🖨 Print</button>
+          <button class="btn btn-sm btn-outline" onclick="copyShopping()">📋 Copy</button>
+          <button class="btn btn-sm btn-primary" onclick="downloadShopping()">⬇ Save</button>
+        </div>
+      </div>
+      <div id="shoppingListContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MEAL PICKER MODAL
+     ============================================================ -->
+<div class="modal-overlay" id="mealPickerModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="mealPickerTitle">Choose a Meal</div>
+    <div class="cat-filter" id="pickerCatFilter"></div>
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Search meals..." oninput="filterMealPicker(this.value)" id="pickerSearch">
+    </div>
+    <div class="meal-grid" id="mealPickerGrid"></div>
+    <div class="divider"></div>
+    <div style="font-size:0.85rem;font-weight:700;color:var(--gray-800);margin-bottom:8px;">➕ Add Custom Meal</div>
+    <div style="display:flex;gap:8px;">
+      <input type="text" id="customMealName" placeholder="Meal name">
+      <input type="number" id="customMealCost" placeholder="₦ Cost" style="width:90px;flex-shrink:0;">
+      <button class="btn btn-primary btn-sm" onclick="addCustomMeal()">Add</button>
+    </div>
+    <div style="height:12px;"></div>
+    <button class="btn btn-ghost btn-full" onclick="closeModal('mealPickerModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     RECIPE DETAIL MODAL
+     ============================================================ -->
+<div class="modal-overlay" id="recipeModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div id="recipeModalContent"></div>
+    <button class="btn btn-ghost btn-full mt-12" onclick="closeModal('recipeModal')">Close</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     FAVORITES MODAL
+     ============================================================ -->
+<div class="modal-overlay" id="favModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">❤️ My Favourite Meals</div>
+    <div id="favModalContent"></div>
+    <button class="btn btn-ghost btn-full mt-12" onclick="closeModal('favModal')">Close</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   DATA: NIGERIAN MEAL DATABASE (60+ meals)
+   ============================================================ */
+const MEALS = [
+  // Rice dishes
+  { id:1, name:"Jollof Rice", cat:"Rice dishes", cost:2000, servings:4, emoji:"🍚", ingredients:["long grain rice","tomatoes","tomato paste","onions","chicken","vegetable oil","seasoning cubes","salt","pepper","bay leaves","curry powder"] },
+  { id:2, name:"Fried Rice", cat:"Rice dishes", cost:2500, servings:4, emoji:"🍳", ingredients:["long grain rice","mixed vegetables","eggs","onions","vegetable oil","soy sauce","seasoning cubes","salt","pepper","carrots","green beans"] },
+  { id:3, name:"Coconut Rice", cat:"Rice dishes", cost:1800, servings:4, emoji:"🥥", ingredients:["long grain rice","coconut milk","onions","vegetable oil","seasoning cubes","salt","pepper","tomatoes","crayfish"] },
+  { id:4, name:"White Rice and Stew", cat:"Rice dishes", cost:1500, servings:4, emoji:"🍚", ingredients:["long grain rice","tomatoes","tomato paste","onions","vegetable oil","seasoning cubes","salt","pepper","beef or chicken"] },
+  { id:5, name:"Ofada Rice and Ayamase", cat:"Rice dishes", cost:2200, servings:3, emoji:"🌶️", ingredients:["ofada rice","green peppers","scotch bonnets","onions","palm oil","crayfish","locust beans","assorted meat","seasoning cubes"] },
+  { id:6, name:"Coconut Jollof Rice", cat:"Rice dishes", cost:2300, servings:4, emoji:"🍚", ingredients:["long grain rice","coconut milk","tomatoes","tomato paste","onions","vegetable oil","seasoning cubes","salt","pepper"] },
+  { id:7, name:"Tomato Rice", cat:"Rice dishes", cost:1200, servings:4, emoji:"🍅", ingredients:["long grain rice","tomatoes","onions","vegetable oil","seasoning cubes","salt","pepper"] },
+  { id:8, name:"Jollof Spaghetti", cat:"Rice dishes", cost:1500, servings:3, emoji:"🍝", ingredients:["spaghetti","tomatoes","tomato paste","onions","vegetable oil","seasoning cubes","salt","pepper","sardines or sausage"] },
+  // Soups
+  { id:9, name:"Egusi Soup", cat:"Soups", cost:3000, servings:6, emoji:"🥣", ingredients:["egusi (melon seeds)","palm oil","tomatoes","onions","spinach or bitter leaf","crayfish","seasoning cubes","salt","pepper","assorted meat","smoked fish"] },
+  { id:10, name:"Okra Soup", cat:"Soups", cost:2500, servings:5, emoji:"🥬", ingredients:["okra","palm oil","tomatoes","onions","crayfish","seasoning cubes","salt","pepper","beef","smoked fish","periwinkle"] },
+  { id:11, name:"Banga Soup", cat:"Soups", cost:2800, servings:5, emoji:"🫙", ingredients:["palm fruits","banga spice","onions","crayfish","seasoning cubes","salt","pepper","assorted meat","dried fish","beletete"] },
+  { id:12, name:"Oha Soup", cat:"Soups", cost:3200, servings:5, emoji:"🌿", ingredients:["oha leaves","cocoyam paste","palm oil","crayfish","seasoning cubes","salt","pepper","assorted meat","ogiri (fermented locust beans)"] },
+  { id:13, name:"Efo Riro", cat:"Soups", cost:2800, servings:5, emoji:"🥦", ingredients:["spinach or shoko leaves","palm oil","tomatoes","peppers","onions","crayfish","seasoning cubes","salt","assorted meat","iru (locust beans)","smoked fish"] },
+  { id:14, name:"Afang Soup", cat:"Soups", cost:3500, servings:5, emoji:"🌱", ingredients:["afang leaves","waterleaf","palm oil","crayfish","seasoning cubes","salt","pepper","assorted meat","periwinkle","snails","smoked fish"] },
+  { id:15, name:"Pepper Soup", cat:"Soups", cost:2500, servings:4, emoji:"🌶️", ingredients:["catfish or goat meat","pepper soup spice","onions","utazi leaves","crayfish","seasoning cubes","salt","scotch bonnets"] },
+  { id:16, name:"Groundnut Soup", cat:"Soups", cost:2000, servings:5, emoji:"🥜", ingredients:["groundnuts (peanuts)","tomatoes","onions","vegetable oil","seasoning cubes","salt","pepper","chicken or beef","crayfish"] },
+  { id:17, name:"Vegetable Soup", cat:"Soups", cost:1800, servings:4, emoji:"🥬", ingredients:["mixed vegetables","palm oil","tomatoes","onions","crayfish","seasoning cubes","salt","pepper","stockfish or dried fish"] },
+  { id:18, name:"Ogbono Soup", cat:"Soups", cost:2800, servings:5, emoji:"🫘", ingredients:["ogbono seeds","palm oil","spinach","onions","crayfish","seasoning cubes","salt","pepper","assorted meat","dried fish"] },
+  { id:19, name:"Bitter Leaf Soup", cat:"Soups", cost:2500, servings:5, emoji:"🌿", ingredients:["bitter leaf","cocoyam paste","palm oil","crayfish","seasoning cubes","salt","pepper","assorted meat","ogiri","smoked fish"] },
+  { id:20, name:"Tomato Stew", cat:"Soups", cost:1200, servings:6, emoji:"🍅", ingredients:["tomatoes","tomato paste","peppers","onions","vegetable oil","seasoning cubes","salt","chicken or beef"] },
+  // Swallows
+  { id:21, name:"Eba and Egusi", cat:"Swallows", cost:1800, servings:3, emoji:"🫙", ingredients:["garri (cassava flakes)","egusi soup ingredients","palm oil","vegetables","crayfish","seasoning cubes","meat or fish"] },
+  { id:22, name:"Pounded Yam and Egusi", cat:"Swallows", cost:2200, servings:3, emoji:"🥔", ingredients:["yam","egusi soup ingredients","palm oil","vegetables","crayfish","seasoning cubes","meat or fish"] },
+  { id:23, name:"Fufu and Okra", cat:"Swallows", cost:2000, servings:3, emoji:"⚪", ingredients:["cassava or cocoyam","okra","palm oil","crayfish","seasoning cubes","fish or meat"] },
+  { id:24, name:"Amala and Ewedu", cat:"Swallows", cost:1500, servings:3, emoji:"🌾", ingredients:["yam flour (amala)","ewedu leaves","locust beans (iru)","tomato stew","meat or fish","seasoning cubes"] },
+  { id:25, name:"Wheat and Egusi", cat:"Swallows", cost:2000, servings:3, emoji:"🌾", ingredients:["wheat flour","egusi soup ingredients","palm oil","vegetables","crayfish","seasoning cubes"] },
+  { id:26, name:"Tuwo Shinkafa", cat:"Swallows", cost:1200, servings:3, emoji:"🍚", ingredients:["local rice flour","groundnut soup or miyan kuka soup","assorted meat","seasoning cubes"] },
+  { id:27, name:"Semolina and Efo Riro", cat:"Swallows", cost:1800, servings:3, emoji:"🌾", ingredients:["semolina flour","efo riro ingredients","palm oil","assorted meat","seasoning cubes"] },
+  // Breakfast
+  { id:28, name:"Pap and Akara", cat:"Breakfast", cost:800, servings:2, emoji:"🥞", ingredients:["ogi (pap/cornstarch)","black-eyed peas","onions","pepper","vegetable oil","salt","seasoning"] },
+  { id:29, name:"Yam and Egg Sauce", cat:"Breakfast", cost:1200, servings:2, emoji:"🍳", ingredients:["yam","eggs","tomatoes","onions","vegetable oil","pepper","salt","seasoning cubes"] },
+  { id:30, name:"Noodles and Egg", cat:"Breakfast", cost:600, servings:2, emoji:"🍜", ingredients:["instant noodles","eggs","tomatoes","onions","vegetable oil","pepper","salt","cabbage"] },
+  { id:31, name:"Bread and Egg", cat:"Breakfast", cost:700, servings:2, emoji:"🍳", ingredients:["bread (sliced)","eggs","tomatoes","onions","butter","pepper","salt","seasoning"] },
+  { id:32, name:"Beans Porridge", cat:"Breakfast", cost:900, servings:4, emoji:"🫘", ingredients:["black-eyed beans","palm oil","onions","crayfish","tomatoes","pepper","salt","seasoning cubes","smoked fish"] },
+  { id:33, name:"Plantain and Egg", cat:"Breakfast", cost:800, servings:2, emoji:"🍌", ingredients:["ripe plantain","eggs","tomatoes","onions","vegetable oil","pepper","salt","seasoning"] },
+  { id:34, name:"Oatmeal Porridge", cat:"Breakfast", cost:500, servings:2, emoji:"🥣", ingredients:["oats","milk (liquid or powder)","sugar","honey","banana or fruits"] },
+  { id:35, name:"Moi Moi", cat:"Breakfast", cost:1000, servings:4, emoji:"🫘", ingredients:["black-eyed peas","tomatoes","peppers","onions","vegetable oil","salt","seasoning cubes","eggs or fish","crayfish"] },
+  { id:36, name:"Fried Yam", cat:"Breakfast", cost:600, servings:2, emoji:"🍟", ingredients:["yam","vegetable oil","salt","pepper sauce"] },
+  { id:37, name:"Tea and Bread", cat:"Breakfast", cost:400, servings:2, emoji:"🍞", ingredients:["bread","tea bags or cocoa","milk","sugar","butter or margarine"] },
+  // Snacks
+  { id:38, name:"Akara", cat:"Snacks", cost:500, servings:10, emoji:"🟤", ingredients:["black-eyed peas","onions","pepper","salt","vegetable oil for frying"] },
+  { id:39, name:"Puff Puff", cat:"Snacks", cost:600, servings:10, emoji:"🟡", ingredients:["flour","yeast","sugar","salt","water","nutmeg","vegetable oil for frying"] },
+  { id:40, name:"Chin Chin", cat:"Snacks", cost:800, servings:20, emoji:"🟤", ingredients:["flour","eggs","sugar","butter","milk","nutmeg","vegetable oil for frying"] },
+  { id:41, name:"Roasted Corn and Pear", cat:"Snacks", cost:400, servings:1, emoji:"🌽", ingredients:["fresh corn","african pear (ube)"] },
+  { id:42, name:"Suya", cat:"Snacks", cost:1500, servings:2, emoji:"🍢", ingredients:["beef","suya spice","groundnut powder","onions","paprika","salt","vegetable oil"] },
+  { id:43, name:"Fried Plantain", cat:"Snacks", cost:500, servings:2, emoji:"🍌", ingredients:["ripe plantain","vegetable oil","salt"] },
+  { id:44, name:"Boli and Groundnut", cat:"Snacks", cost:400, servings:1, emoji:"🌰", ingredients:["unripe plantain","roasted groundnuts"] },
+  { id:45, name:"Kilishi", cat:"Snacks", cost:1000, servings:4, emoji:"🥩", ingredients:["beef (sliced thin)","groundnut paste","suya spice","salt","ginger","garlic"] },
+  // Local delicacies
+  { id:46, name:"Abacha (African Salad)", cat:"Local delicacies", cost:1500, servings:3, emoji:"🥗", ingredients:["dried cassava (abacha)","ugba (oil bean)","palm oil","utazi leaves","crayfish","onions","salt","pepper","ogiri","potash"] },
+  { id:47, name:"Masa (Hausa Rice Cake)", cat:"Local delicacies", cost:500, servings:6, emoji:"🥞", ingredients:["local rice","yeast","sugar","salt","vegetable oil"] },
+  { id:48, name:"Nkwobi", cat:"Local delicacies", cost:2500, servings:3, emoji:"🍖", ingredients:["cow foot","palm oil","ugba","utazi leaves","crayfish","onions","salt","pepper","potash"] },
+  { id:49, name:"Isi Ewu", cat:"Local delicacies", cost:3000, servings:4, emoji:"🐐", ingredients:["goat head","palm oil","utazi leaves","crayfish","onions","salt","pepper","ogiri","potash"] },
+  { id:50, name:"Banga Rice", cat:"Local delicacies", cost:2000, servings:4, emoji:"🍚", ingredients:["local rice","palm fruit (banga)","crayfish","onions","banga spice","dried fish","seasoning cubes","salt"] },
+  { id:51, name:"Miyan Kuka", cat:"Local delicacies", cost:1200, servings:4, emoji:"🌿", ingredients:["baobab leaves powder (kuka)","palm oil","potash","crayfish","onions","salt","pepper","dried fish"] },
+  { id:52, name:"Ebiripo (Cocoyam Pottage)", cat:"Local delicacies", cost:1000, servings:3, emoji:"🥔", ingredients:["cocoyam","palm oil","crayfish","pepper","onions","seasoning cubes","salt","dry fish"] },
+  { id:53, name:"Ugba and Okporo", cat:"Local delicacies", cost:800, servings:2, emoji:"🫘", ingredients:["ugba (oil bean)","potash","crayfish","palm oil","utazi leaves","salt","pepper"] },
+  { id:54, name:"Beans and Plantain", cat:"Breakfast", cost:1000, servings:3, emoji:"🍌", ingredients:["black-eyed beans","ripe plantain","palm oil","onions","crayfish","salt","pepper","seasoning cubes"] },
+  { id:55, name:"Yam Porridge (Asaro)", cat:"Local delicacies", cost:1400, servings:4, emoji:"🥔", ingredients:["yam","palm oil","tomatoes","onions","crayfish","spinach","seasoning cubes","salt","pepper","smoked fish"] },
+  { id:56, name:"Plantain Porridge", cat:"Local delicacies", cost:1200, servings:3, emoji:"🍌", ingredients:["unripe plantain","palm oil","tomatoes","onions","crayfish","salt","pepper","smoked fish","seasoning cubes"] },
+  { id:57, name:"Ukodo (Yam Pepper Soup)", cat:"Local delicacies", cost:2200, servings:4, emoji:"🌶️", ingredients:["yam","goat meat or fish","pepper soup spice","onions","crayfish","seasoning cubes","salt","scotch bonnets","ehuru"] },
+  { id:58, name:"Danwake", cat:"Local delicacies", cost:600, servings:4, emoji:"🟡", ingredients:["bean flour","potash solution","salt","groundnut oil","tomato sauce"] },
+  { id:59, name:"Gbegiri (Yoruba Bean Soup)", cat:"Soups", cost:1000, servings:4, emoji:"🟡", ingredients:["honey beans","palm oil","onions","crayfish","seasoning cubes","salt","locust beans"] },
+  { id:60, name:"Egusi and Ogiri Stew", cat:"Soups", cost:2500, servings:5, emoji:"🥣", ingredients:["egusi","palm oil","tomatoes","ogiri","onions","crayfish","seasoning cubes","assorted meat","smoked fish"] },
+  { id:61, name:"Coconut Fish Stew", cat:"Soups", cost:2800, servings:4, emoji:"🐟", ingredients:["fresh fish","coconut milk","tomatoes","onions","vegetable oil","garlic","ginger","curry","seasoning cubes","salt","pepper"] },
+  { id:62, name:"Catfish Stew (Eja Osan)", cat:"Soups", cost:3000, servings:4, emoji:"🐟", ingredients:["catfish","palm oil","tomatoes","peppers","onions","locust beans","crayfish","seasoning cubes","salt"] },
+];
+
+/* ============================================================
+   DATA: RECIPES (30 detailed recipes)
+   ============================================================ */
+const RECIPES = [
+  {
+    id:1, mealId:1, name:"Party Jollof Rice", emoji:"🍚", time:60, servings:6, cost:2500,
+    preview:"The iconic smoky Nigerian Jollof that wins at every party",
+    ingredients:["3 cups long grain rice","6 medium tomatoes, blended","3 tbsp tomato paste","2 large onions","500g chicken","½ cup vegetable oil","3 seasoning cubes","1 tsp curry powder","1 tsp thyme","2 bay leaves","Salt and pepper to taste","2 cups chicken stock"],
+    steps:["Rinse and parboil rice for 10 minutes, then drain and set aside.","Blend tomatoes, peppers and one onion together. Set aside.","Season chicken with one diced onion, salt, seasoning cubes, curry and thyme. Cook until tender. Reserve the stock.","Heat oil in a large pot. Fry the remaining sliced onion until soft (2 minutes).","Pour in tomato blend and tomato paste. Fry on high heat, stirring, until oil floats on top (15–20 min). This is your base.","Add chicken stock, bay leaves, and adjust seasoning. Bring to a boil.","Pour in the parboiled rice. Mix well. Cover tightly and cook on low heat until rice absorbs all liquid (20–25 min). Do not lift lid unnecessarily. The steam creates the coveted smoky bottom.","Stir gently, taste and adjust. Serve hot with fried chicken."]
+  },
+  {
+    id:2, mealId:9, name:"Classic Egusi Soup", emoji:"🥣", time:45, servings:6, cost:3000,
+    preview:"Rich, hearty egusi soup with assorted meat — a Nigerian staple",
+    ingredients:["2 cups egusi (ground melon seeds)","¼ cup palm oil","500g assorted meat (beef, tripe, kpomo)","200g smoked fish","1 cup crayfish (blended)","2 medium onions","3 scotch bonnet peppers","2 cups spinach or bitter leaf","3 seasoning cubes","Salt to taste","Stock from boiled meat"],
+    steps:["Season and cook assorted meat with one onion, seasoning cubes and salt until tender. Reserve the stock.","Mix egusi with a small amount of water to form a thick paste. Do not add too much water.","Heat palm oil in a pot until hot but not smoking. Add sliced onion, fry until soft.","Add egusi paste, fry on medium heat, turning frequently, for about 10–12 minutes until egusi balls form and are cooked through.","Add blended peppers, crayfish, smoked fish, meat stock and cooked meat. Stir well.","Cook for 10 minutes on medium heat. Taste and adjust seasoning.","Add chopped spinach or washed bitter leaf. Stir and cook for another 3–5 minutes.","Serve hot with eba, pounded yam, or fufu."]
+  },
+  {
+    id:3, mealId:29, name:"Yam and Egg Sauce", emoji:"🍳", time:25, servings:2, cost:1200,
+    preview:"Simple, hearty breakfast — boiled yam with rich tomato egg sauce",
+    ingredients:["½ medium yam (peeled and sliced)","4 eggs","3 medium tomatoes, chopped","1 medium onion, diced","2 scotch bonnet peppers, diced","2 tbsp vegetable oil","1 seasoning cube","Salt to taste","Fresh herbs (optional)"],
+    steps:["Peel and slice yam into desired sizes. Rinse well and boil in salted water for 15–20 minutes until fork-tender. Drain and set aside.","Heat oil in a pan. Add diced onion, fry until translucent (2 min).","Add chopped tomatoes and peppers. Fry on medium heat, stirring occasionally, for 5 minutes until tomatoes cook down.","Crack eggs into a bowl, beat lightly with a fork. Season with a pinch of salt.","Push vegetables to the side of the pan. Pour beaten eggs in and scramble gently, then mix with the tomato base.","Add crumbled seasoning cube. Stir everything together and cook for 1–2 more minutes.","Serve immediately with boiled yam."]
+  },
+  {
+    id:4, mealId:35, name:"Steamed Moi Moi", emoji:"🫘", time:50, servings:6, cost:1200,
+    preview:"Silky bean pudding steamed to perfection — a Nigerian comfort food",
+    ingredients:["2 cups black-eyed peas (peeled)","3 medium tomatoes","2 scotch bonnet peppers","1 medium onion","3 tbsp vegetable oil","3 eggs (hard-boiled, sliced)","1 tin fish or sardines","2 seasoning cubes","1 tsp crayfish","Salt to taste","Moi moi leaves, foil or containers"],
+    steps:["Soak beans in water for 30 minutes. Rub between palms to remove skins. Rinse until clean.","Blend beans with tomatoes, peppers, onion and a little water until very smooth. The batter should be thick.","Pour batter into a bowl. Add oil, crayfish, crumbled seasoning cubes and salt. Mix well. The batter should fall off a spoon in a thick ribbon.","Stir in fish. Pour batter into moi moi leaves, foil packets or cups. Add a slice of egg to each.","Arrange in a large pot with water at the bottom. Steam on medium heat for 30–35 minutes. Do not open lid frequently.","Test with a toothpick — if it comes out clean, moi moi is done.","Serve warm as a meal or side dish."]
+  },
+  {
+    id:5, mealId:13, name:"Efo Riro (Yoruba Vegetable Soup)", emoji:"🥦", time:35, servings:5, cost:2800,
+    preview:"Vibrant, deeply flavoured spinach soup from Yoruba tradition",
+    ingredients:["4 bunches spinach (shoko or soko yokoto)","¼ cup palm oil","400g assorted meat","150g smoked fish","1 cup crayfish (ground)","2 red bell peppers and 2 scotch bonnets (blended)","1 onion","2 tbsp locust beans (iru)","3 seasoning cubes","Salt to taste"],
+    steps:["Season and cook assorted meat until tender. Shred or leave whole. Reserve stock.","Wash and roughly chop spinach. Blanch in boiling water for 1 minute, drain and squeeze out excess water.","Heat palm oil in a pot. Add sliced onion, fry 1 minute. Add blended peppers, fry on high heat until dry and oil rises (8–10 min).","Add locust beans, crayfish, smoked fish, meat and stock. Season and cook 5 minutes.","Add spinach. Stir gently to combine. Do not cover — this keeps the colour vibrant.","Cook 3–4 minutes. Taste and adjust salt.","Serve with eba, pounded yam, or any swallow."]
+  },
+  {
+    id:6, mealId:46, name:"Abacha (African Salad)", emoji:"🥗", time:20, servings:3, cost:1500,
+    preview:"Tangy, crunchy cassava salad — an Eastern Nigerian classic",
+    ingredients:["2 cups dried abacha (shredded cassava)","½ cup ugba (oil bean)","3 tbsp palm oil","1 tsp potash (dissolved in water)","1 cup crayfish","2 utazi leaves (shredded)","1 onion (sliced)","Ogiri (fermented seeds) to taste","Garden eggs (optional)","Salt and pepper to taste"],
+    steps:["Soak abacha in cold water for 5–10 minutes until soft. Drain thoroughly and set aside.","Dissolve potash in 2 tbsp water. Mix palm oil with dissolved potash in a large bowl — it will turn yellow. This is the base sauce.","Add crayfish, ogiri, sliced onion, salt and pepper to the palm oil mixture. Stir well.","Add ugba to the sauce and mix.","Add soaked abacha and toss everything together until well coated.","Top with shredded utazi leaves. Adjust seasoning.","Serve immediately (best eaten fresh). Garnish with garden eggs if using."]
+  },
+  {
+    id:7, mealId:38, name:"Crispy Akara", emoji:"🟤", time:30, servings:10, cost:600,
+    preview:"Golden, airy bean cakes — the beloved Nigerian street breakfast",
+    ingredients:["2 cups black-eyed peas (peeled)","1 medium onion","2 scotch bonnet peppers","Salt to taste","Vegetable oil for deep frying"],
+    steps:["Soak beans for 20 minutes. Rub between hands to remove skins. Rinse several times until skins are gone.","Blend beans, onion and peppers with minimal water. Batter should be very thick and smooth — this is key to fluffy akara.","Beat the batter vigorously with a wooden spoon for 3–5 minutes to incorporate air. Season with salt.","Heat plenty of vegetable oil in a deep pan. Test oil with a drop of batter — it should sizzle and float.","Using a spoon or your hand, drop spoonfuls of batter into hot oil. Do not overcrowd.","Fry 3–4 minutes per side until golden brown. Drain on paper towels.","Serve hot with pap (ogi), custard, or bread."]
+  },
+  {
+    id:8, mealId:39, name:"Classic Puff Puff", emoji:"🟡", time:40, servings:15, cost:700,
+    preview:"Soft, sweet Nigerian doughnuts — irresistible at any time of day",
+    ingredients:["3 cups plain flour","2 tsp dry yeast","½ cup warm water (for yeast)","1 cup warm water (for batter)","½ cup sugar","1 tsp salt","¼ tsp nutmeg","Vegetable oil for deep frying"],
+    steps:["Dissolve yeast in ½ cup warm water with 1 tsp sugar. Leave 10 minutes until frothy.","Mix flour, remaining sugar, salt and nutmeg in a bowl.","Add activated yeast mixture and remaining warm water. Mix into a smooth, thick batter (not runny, not stiff). No lumps.","Cover and leave to rise in a warm place for 45–60 minutes until doubled and bubbly.","Heat plenty of oil in a deep pot over medium heat.","Using your hand or a spoon, squeeze out or drop balls of batter into hot oil.","Fry 3–4 minutes, turning, until deep golden brown. Drain on paper towels.","Serve warm. Dust with sugar or dip in pepper sauce."]
+  },
+  {
+    id:9, mealId:11, name:"Delta Banga Soup", emoji:"🫙", time:60, servings:5, cost:2800,
+    preview:"Aromatic palm fruit soup with warming spices — the pride of Delta State",
+    ingredients:["2kg palm fruits","500g assorted meat","200g dried fish","1 cup crayfish","Banga spice mix (beletete, oburunbebe, isam)","1 onion","3 seasoning cubes","Salt and pepper to taste"],
+    steps:["Wash palm fruits. Boil in water for 20–25 minutes until very soft.","Pound or process in a palm fruit extractor. Add water and squeeze out palm juice. Discard fibre.","Strain palm juice through a sieve into a pot. Bring to a boil.","Add cooked assorted meat, dried fish, crayfish, onion and seasoning.","Add banga spices. Stir and simmer 20–25 minutes until soup thickens and is richly flavoured.","Taste and adjust seasoning. Add salt and more pepper if needed.","Serve with starch, eba, or white rice."]
+  },
+  {
+    id:10, mealId:55, name:"Yam Pottage (Asaro)", emoji:"🥔", time:40, servings:4, cost:1400,
+    preview:"Comforting, one-pot yam porridge — Nigerian soul food at its finest",
+    ingredients:["1 medium yam (peeled and cubed)","¼ cup palm oil","2 medium tomatoes (blended)","1 onion (diced)","1 cup crayfish","2 cups spinach or ugu leaves","150g smoked fish","2 seasoning cubes","Salt and pepper to taste","Scotch bonnets to taste"],
+    steps:["Peel and cube yam. Rinse and place in a pot. Cover with just enough water to cook (about 3 cups).","Add palm oil, blended tomatoes, onions, crayfish, smoked fish, seasoning and peppers.","Bring to a boil, then reduce to medium heat. Cook uncovered for 15 minutes.","As yam cooks, use a wooden spoon to mash some pieces against the pot — this thickens the pottage naturally.","Taste and adjust seasoning. Add more water if too thick.","Add chopped spinach or ugu leaves. Stir in and cook 3–4 more minutes.","Serve hot. Goes beautifully on its own or with fish."]
+  },
+  {
+    id:11, mealId:15, name:"Catfish Pepper Soup", emoji:"🌶️", time:30, servings:4, cost:3000,
+    preview:"Fiery, warming pepper soup — perfect for cold harmattan evenings",
+    ingredients:["1 whole catfish (cleaned and cut into chunks)","2 tbsp pepper soup spice","3 scotch bonnet peppers","1 onion (sliced)","1 cup crayfish","Utazi leaves","2 seasoning cubes","Salt to taste","4 cups water","Uziza leaves (optional)"],
+    steps:["Clean and cut catfish. Season lightly with salt and set aside.","In a pot, combine water, onion, crayfish, pepper soup spice, scotch bonnets and seasoning cubes. Bring to a boil.","Add catfish pieces. Do not stir for the first 5 minutes to prevent fish from breaking.","Cook on medium heat for 12–15 minutes.","Taste and adjust seasoning. Add more pepper or spice to your preference.","Add utazi and uziza leaves. Cook 2 minutes more.","Serve very hot in bowls. Eat alone or with white rice."]
+  },
+  {
+    id:12, mealId:30, name:"Noodles and Vegetable Egg", emoji:"🍜", time:12, servings:2, cost:700,
+    preview:"Nigeria's fastest comfort meal — ready in under 15 minutes",
+    ingredients:["2 packs instant noodles","2 eggs","1 medium tomato (diced)","½ onion (diced)","Handful of cabbage (shredded)","1 carrot (grated, optional)","1 tbsp vegetable oil","Pepper to taste","Salt (noodles usually have enough)"],
+    steps:["Cook noodles in boiling water for 3 minutes. Drain and set aside. Use only half the seasoning sachet to control sodium.","Heat oil in a pan. Sauté onion 1 minute. Add tomatoes and pepper, cook 2 minutes.","Push vegetables aside. Crack in eggs and scramble lightly, then fold into vegetables.","Add cabbage and carrot. Stir fry 1 minute.","Add cooked noodles. Toss everything together. Adjust seasoning.","Serve immediately while hot."]
+  },
+  {
+    id:13, mealId:2, name:"Nigerian Fried Rice", emoji:"🍳", time:45, servings:4, cost:2500,
+    preview:"Colourful, savoury party fried rice that always impresses",
+    ingredients:["3 cups long grain rice","Mixed vegetables (carrots, green beans, sweet corn, green peas)","3 eggs","1 medium onion","2 tbsp soy sauce (optional)","3 tbsp vegetable oil","2 seasoning cubes","Liver or shrimp (optional)","Salt and white pepper","Spring onions for garnish"],
+    steps:["Parboil rice in seasoned water for 12 minutes. Drain and allow to cool — cold rice fries better.","Dice all vegetables small. Season liver or shrimp and sauté until cooked. Set aside.","Heat oil in a large wok or pot on high heat. Add onions, fry 1 minute.","Add vegetables. Stir fry on high heat for 3 minutes — keep them slightly crisp.","Push vegetables to side. Add eggs and scramble quickly.","Add rice. Stir fry everything on high heat for 5 minutes, mixing constantly.","Add soy sauce if using. Crumble in seasoning cubes. Taste and adjust.","Add liver or shrimp. Toss. Garnish with spring onions. Serve immediately."]
+  },
+  {
+    id:14, mealId:32, name:"Nigerian Beans Porridge", emoji:"🫘", time:50, servings:4, cost:900,
+    preview:"Creamy, protein-rich beans — a budget-friendly crowd pleaser",
+    ingredients:["2 cups honey beans or black-eyed beans","3 tbsp palm oil","2 medium tomatoes","1 onion","1 cup crayfish","Smoked fish","2 seasoning cubes","Scotch bonnets to taste","Salt to taste","1 ripe plantain (diced, optional)"],
+    steps:["Wash and soak beans 30 minutes (speeds up cooking). Drain.","Cook beans in fresh water until soft — about 30–40 minutes. Do not add salt yet.","Blend tomatoes, onion and peppers together.","Heat palm oil in a separate pan. Fry tomato blend until oil floats (8 min). Set aside.","When beans are very soft, add tomato stew, crayfish, smoked fish and seasoning. Mash some beans.","Add diced plantain if using. Cook 5 more minutes.","Season with salt and adjust pepper. Serve with plantain or alone."]
+  },
+  {
+    id:15, mealId:33, name:"Fried Plantain (Dodo)", emoji:"🍌", time:12, servings:2, cost:500,
+    preview:"Sweet, caramelised dodo — the ultimate side dish for everything",
+    ingredients:["2 very ripe plantains (yellow with black spots)","Vegetable oil (enough for shallow frying)","Pinch of salt"],
+    steps:["Peel plantains. Slice diagonally into 1cm thick pieces for classic dodo, or lengthwise for a different presentation.","Heat oil in a pan on medium heat. Oil should be about 1cm deep.","Carefully place plantain slices in hot oil. Don't overcrowd.","Fry 2–3 minutes per side until deep golden caramel brown. The darker, the sweeter.","Remove and drain on paper towels.","Serve immediately as a side with rice, beans, or enjoy as a snack."]
+  },
+  {
+    id:16, mealId:42, name:"Beef Suya", emoji:"🍢", time:40, servings:4, cost:2500,
+    preview:"Nigeria's legendary street food skewer — smoky, spiced and addictive",
+    ingredients:["500g beef (sirloin or thigh, sliced thin)","3 tbsp groundnut powder (ground roasted peanuts)","2 tbsp suya spice","1 tsp ginger powder","1 tsp garlic powder","1 tsp paprika","Salt to taste","Vegetable oil","Onions and tomatoes to serve"],
+    steps:["Mix groundnut powder with all spices and a pinch of salt.","Slice beef very thinly against the grain. Pound lightly to tenderise.","Coat beef pieces thoroughly in spice mixture. Rub into the meat.","Thread onto skewers. Brush lightly with oil.","Grill on a very hot grill or pan, turning every 2–3 minutes, for 8–12 minutes total until charred and cooked.","Dust with more suya spice while still hot.","Serve with sliced onions, tomatoes and cabbage."]
+  },
+  {
+    id:17, mealId:24, name:"Amala and Ewedu with Gbegiri", emoji:"🌾", time:35, servings:3, cost:1800,
+    preview:"The Yoruba holy trinity — three dishes better together than apart",
+    ingredients:["2 cups yam flour (amala)","2 bunches ewedu (jute leaves)","1 cup honey beans (cooked and blended)","Palm oil","Locust beans (iru)","Crayfish","Tomato stew","Seasoning cubes","Salt","Assorted meat"],
+    steps:["For ewedu: wash leaves. Blend or pound with a small stick (ijabe). Cook in water with locust beans, crayfish and seasoning 8 minutes. Blend lightly for a smooth consistency. Add potash (optional) for more draw.","For gbegiri: cook honey beans until very soft. Blend smooth with water. Fry in palm oil with crayfish and seasoning 10 minutes.","For amala: boil water in a pot. Add yam flour gradually, stirring vigorously with a wooden spoon. Turn off heat, cover and steam 5 minutes. Stir again until smooth and pliable.","Serve amala in a mound with ewedu, gbegiri and tomato stew poured over."]
+  },
+  {
+    id:18, mealId:18, name:"Ogbono Soup", emoji:"🫘", time:40, servings:5, cost:2800,
+    preview:"Silky, draw soup with that irresistible thick texture",
+    ingredients:["1½ cups ogbono seeds (ground)","¼ cup palm oil","500g assorted meat","150g smoked fish","1 cup crayfish","2 cups spinach","2 onions","3 scotch bonnet peppers","3 seasoning cubes","Salt to taste"],
+    steps:["Season and cook assorted meat until tender. Reserve stock.","Heat palm oil in pot until hot. Remove from heat briefly.","Add ground ogbono to hot oil. Stir and return to medium heat. Fry 3–5 minutes, stirring. It will become thick and draw.","Add meat stock gradually, stirring to prevent lumps. Add crayfish, smoked fish and meat.","Add blended pepper and seasoning. Cook 10 minutes on medium heat, stirring often.","The soup will become thicker and more draw-like as it cooks.","Add spinach. Stir in and cook 3 minutes more. Adjust seasoning.","Serve with any swallow."]
+  },
+  {
+    id:19, mealId:28, name:"Ogi (Pap) and Akara", emoji:"🥞", time:20, servings:2, cost:800,
+    preview:"Nigeria's favourite breakfast combo — smooth pap with crispy bean cakes",
+    ingredients:["½ cup fermented corn paste (ogi)","Sugar to taste","Milk (optional)","2 cups black-eyed peas (for akara)","1 onion","Peppers","Salt","Oil for frying"],
+    steps:["For pap: mix corn paste with cold water into a smooth lump-free slurry.","Boil 1.5 cups of water in a kettle. Pour hot water over slurry, stirring continuously until pap thickens to a smooth consistency.","Sweeten with sugar. Add milk if desired. Cover and set aside to stay warm.","Prepare akara batter as per akara recipe (blend beans, onion, peppers until thick).","Deep fry spoonfuls of batter in hot oil until golden.","Serve pap in a bowl alongside hot akara."]
+  },
+  {
+    id:20, mealId:56, name:"Plantain Porridge", emoji:"🍌", time:30, servings:3, cost:1200,
+    preview:"Unripe plantain cooked down into a hearty, filling pottage",
+    ingredients:["2 unripe plantains (peeled, sliced)","3 tbsp palm oil","2 medium tomatoes","1 onion","Smoked fish","Crayfish","Pepper and scotch bonnets","2 seasoning cubes","Spinach or ugu leaves","Salt to taste"],
+    steps:["Peel plantains (use gloves — they stain). Cut into chunks.","Blend tomatoes, onion and peppers together.","Place plantain in pot with enough water to cover. Add palm oil, blended tomatoes, crayfish, smoked fish and seasoning.","Cook on medium heat for 15–20 minutes until plantain is tender.","Taste and adjust seasoning. If too thick, add water; if too watery, cook uncovered.","Add spinach. Stir in, cook 2–3 minutes more.","Serve hot."]
+  },
+  {
+    id:21, mealId:36, name:"Crispy Fried Yam with Pepper Sauce", emoji:"🍟", time:25, servings:2, cost:700,
+    preview:"Street-style fried yam with fiery dipping sauce",
+    ingredients:["½ medium yam (peeled)","Vegetable oil for frying","Salt","For sauce: 4 tomatoes, 3 scotch bonnets, 1 onion, 2 tbsp oil, seasoning"],
+    steps:["Peel yam. Slice into finger-chip shapes or rounds (about 1cm thick). Rinse and pat dry — dry yam fries crispier.","Season lightly with salt.","Heat oil in a pan on medium-high heat (enough to submerge yam halfway).","Fry yam in batches for 5–7 minutes, turning once, until golden and crisp on outside.","For sauce: blend tomatoes, peppers and onion. Fry in oil with seasoning for 10 minutes until thick.","Serve yam chips piping hot with pepper sauce on the side."]
+  },
+  {
+    id:22, mealId:22, name:"Pounded Yam (Iyán)", emoji:"🥔", time:30, servings:3, cost:600,
+    preview:"Silky smooth pounded yam — the king of Nigerian swallows",
+    ingredients:["1kg yam (peeled and cubed)","Salt (optional)","Water"],
+    steps:["Peel yam, cut into chunks and rinse well.","Boil in salted water for 15–20 minutes until very soft and falling apart. Drain and reserve a little cooking water.","Transfer hot yam to a mortar. Begin pounding — fold and pound, fold and pound, turning in between.","Add a splash of the reserved water if yam sticks. Continue pounding until completely smooth, lump-free and elastic.","Alternatively, use a stand mixer with a dough hook on medium speed for 5–7 minutes.","Serve immediately with any soup."]
+  },
+  {
+    id:23, mealId:48, name:"Nkwobi", emoji:"🍖", time:50, servings:3, cost:2800,
+    preview:"Spicy cow foot delicacy — a classic Eastern Nigerian night-out dish",
+    ingredients:["1kg cow foot (cleaned and cut)","¼ cup palm oil","½ cup ugba (oil bean seed)","Utazi leaves (shredded)","1 tsp potash","Crayfish","1 onion","Salt and pepper","Seasoning cubes"],
+    steps:["Season cow foot and pressure cook or boil until very tender — about 45 min in pressure cooker.","Mix palm oil with dissolved potash in a bowl until it turns yellow.","Add crayfish, sliced onion, salt, pepper and seasoning to the palm oil mixture.","Add ugba. Toss in the cooked cow foot and mix well to coat.","Taste and adjust seasoning. The dish is eaten at room temperature.","Top generously with shredded utazi leaves.","Serve in a pot or bowl — perfect with a cold drink."]
+  },
+  {
+    id:24, mealId:3, name:"Coconut Rice", emoji:"🥥", time:35, servings:4, cost:1800,
+    preview:"Fragrant, creamy coconut rice — elegantly simple and delicious",
+    ingredients:["3 cups long grain rice","1 tin (400ml) coconut milk","2 cups water","1 medium onion (diced)","3 scotch bonnet peppers","Crayfish (optional)","2 tbsp vegetable oil","2 seasoning cubes","Salt to taste","Shrimps or fish (optional)"],
+    steps:["Wash rice thoroughly. Drain.","Heat oil in a pot. Fry onion and peppers 2 minutes.","Add coconut milk and water. Bring to a boil.","Add crayfish, seasoning cubes and salt. Taste the liquid — it should be well-seasoned.","Add rice. Stir once, bring to a boil then reduce heat to very low.","Cover tightly. Cook 20–25 minutes without lifting lid.","Fluff with a fork. Garnish with shrimps if using. Serve with fried fish or chicken."]
+  },
+  {
+    id:25, mealId:41, name:"Roasted Corn (Bole) and African Pear", emoji:"🌽", time:20, servings:2, cost:400,
+    preview:"Street food perfection — charred corn with creamy ube pear",
+    ingredients:["2 fresh corn cobs","2 African pears (ube)","Salt (optional)","Pepper sauce (optional)"],
+    steps:["Peel corn husks down but leave attached (this acts as a handle and protects from direct heat).","Place corn directly over open flame or on a grill/grate. Rotate every 2 minutes.","Grill 15–18 minutes until kernels are charred in spots and cooked through.","Boil African pears in water for 5 minutes OR place near fire for 3 minutes until skin wrinkles.","Squeeze warm ube out of skin (eat the flesh, discard skin and seed).","Enjoy corn and pear together — the combo is divine. Optional: rub with salt or pepper sauce."]
+  },
+  {
+    id:26, mealId:16, name:"Nigerian Groundnut Soup", emoji:"🥜", time:40, servings:5, cost:2000,
+    preview:"Rich, nutty soup from the North that warms the soul",
+    ingredients:["2 cups groundnuts (roasted and ground)","500g chicken or goat meat","2 medium tomatoes","2 onions","3 scotch bonnets","Crayfish","3 tbsp vegetable oil","3 seasoning cubes","Salt to taste","Crayfish and spices"],
+    steps:["Season and cook meat until tender. Reserve stock.","Blend tomatoes, one onion and peppers. Fry in oil with sliced onion 8 minutes until thick.","Add meat stock, crayfish, cooked meat and seasoning.","Mix ground groundnuts with water to make a smooth paste. Add to pot gradually, stirring.","Cook on medium heat 15–20 minutes, stirring often to prevent sticking. Soup will thicken.","Taste and adjust. Add water if too thick.","Serve with jollof rice or tuwo shinkafa."]
+  },
+  {
+    id:27, mealId:37, name:"Nigerian Tea and Toast", emoji:"🍞", time:7, servings:2, cost:500,
+    preview:"Simple, satisfying start — the classic Nigerian morning routine",
+    ingredients:["4 slices bread","2 tea bags (Lipton or Bournvita)","500ml hot water","Milk to taste","Sugar to taste","Butter or margarine","Eggs (optional)"],
+    steps:["Boil water. Pour over tea bags in cups. Steep 3–4 minutes.","Add milk and sugar to taste. Stir.","Toast bread in a pan with butter or in a toaster until golden.","Spread with butter or margarine.","Serve tea alongside hot buttered toast.","Optional: add fried or scrambled eggs for a more filling breakfast."]
+  },
+  {
+    id:28, mealId:21, name:"Eba (Garri Swallow)", emoji:"🫙", time:8, servings:2, cost:300,
+    preview:"The everyday Nigerian swallow — quick, filling and affordable",
+    ingredients:["2 cups garri (cassava flakes)","2 cups boiling water","Soup of choice to serve"],
+    steps:["Boil 2 cups of water in a pot.","Reduce heat to medium-low.","Pour garri into the boiling water gradually, stirring as you pour. Use enough garri to achieve your preferred consistency.","Use a wooden spoon to turn and fold the mixture firmly until smooth.","Cover and allow to steam on very low heat 2–3 minutes.","Turn out into a bowl or plate. Serve immediately with any soup.","Pro tip: for whiter eba, use white garri; for slightly sour eba, use regular yellow garri."]
+  },
+  {
+    id:29, mealId:57, name:"Ukodo (Yam Pepper Soup)", emoji:"🌶️", time:45, servings:4, cost:2200,
+    preview:"Hearty Urhobo yam pepper soup — a celebration dish and hangover cure",
+    ingredients:["½ medium yam (cubed)","500g goat meat or catfish","3 tbsp pepper soup spice (including ehuru, uda)","3 scotch bonnet peppers","1 onion","Crayfish","2 seasoning cubes","Salt to taste","Utazi leaves"],
+    steps:["Season meat and cook in water until halfway done.","Add cubed yam, crayfish, pepper soup spice, onions and scotch bonnets.","Add more water if needed — it should be brothy not thick.","Cook until yam is tender and meat is fully cooked (20–25 min).","Taste and adjust seasoning and pepper.","Add utazi leaves. Cook 2 minutes more.","Serve very hot."]
+  },
+  {
+    id:30, mealId:62, name:"Catfish Stew (Eja Osan)", emoji:"🐟", time:35, servings:4, cost:3000,
+    preview:"Spicy Yoruba catfish stew — bold, tangy and deeply satisfying",
+    ingredients:["1 whole catfish (cleaned, cut)","6 medium tomatoes (blended)","3 tbsp tomato paste","Red bell peppers","Scotch bonnets","1 large onion","¼ cup palm oil","Locust beans (iru)","Crayfish","3 seasoning cubes","Salt to taste"],
+    steps:["Season catfish with salt and pepper. Optional: marinate 30 minutes.","Heat palm oil. Fry sliced onion 1 minute.","Add blended tomatoes, tomato paste and peppers. Fry on high heat, stirring, for 12–15 min until very thick and oil rises.","Add crayfish, locust beans and seasoning. Cook 3 more minutes.","Gently lay catfish pieces into stew. Do not stir — spoon stew over fish instead.","Cover and cook on medium heat 10–12 minutes until fish is cooked through.","Serve with white rice, agidi, or eat as a rich stew with swallow."]
+  },
+];
+
+/* ============================================================
+   DATA: FOOD TIPS
+   ============================================================ */
+const TIPS = [
+  "Buy tomatoes in bulk when they're cheap and blend and freeze them — saves 40% of your budget!",
+  "Dried fish and crayfish last months in the freezer and add deep flavour to soups cheaply.",
+  "Parboiling rice before cooking saves fuel and time, and gives you better jollof rice.",
+  "Shop for vegetables early Saturday morning at local markets — freshest selection, best prices.",
+  "A pressure cooker cuts meat cooking time by 60% and saves gas.",
+  "Keep garri, pasta and canned tomatoes stocked — they can make a meal from almost nothing.",
+  "Freeze leftover soup in portions — it reheats perfectly and saves cooking days.",
+  "Seasonal fruits like mango, orange and guava are cheaper and more nutritious than imported snacks.",
+  "Groundnut oil smokes at high temperatures — use vegetable oil for frying and save groundnut oil for flavour.",
+  "Cooking with your neighbours to share bulk-buy costs is a great way to eat well on less.",
+  "Beans are the most protein-rich, budget-friendly food in Nigeria. Eat them 3x a week.",
+  "Black-eyed beans soak for less time than honey beans. Plan your soaking time accordingly.",
+  "When blending peppers, always blend in batches and freeze — saves blending fees and time.",
+  "Add a little baking soda to beans to cook them faster (use sparingly).",
+  "Plantain that's almost too ripe makes the best dodo — sweetest and most caramelised.",
+];
+
+/* ============================================================
+   APP STATE
+   ============================================================ */
+const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+const MEAL_TIMES = ["Breakfast","Lunch","Dinner"];
+const CATS = ["All","Rice dishes","Soups","Swallows","Breakfast","Snacks","Local delicacies"];
+
+let currentDay = 0;
+let currentMealSlot = null; // { day, mealTime }
+let userIngredients = [];
+let pickerCatFilter = "All";
+let recipeCatFilter = "All";
+
+/* ============================================================
+   LOCAL STORAGE HELPERS
+   ============================================================ */
+function ls(key, val) {
+  if (val === undefined) { try { return JSON.parse(localStorage.getItem(key)); } catch(e) { return null; } }
+  localStorage.setItem(key, JSON.stringify(val));
+}
+
+function getWeekPlan() { return ls('mp_weekplan') || {}; }
+function saveWeekPlan(plan) { ls('mp_weekplan', plan); }
+function getExpenses() { return ls('mp_expenses') || []; }
+function saveExpenses(e) { ls('mp_expenses', e); }
+function getFavorites() { return ls('mp_favorites') || []; }
+function saveFavorites(f) { ls('mp_favorites', f); }
+function getCustomMeals() { return ls('mp_custom_meals') || []; }
+function saveCustomMeals(m) { ls('mp_custom_meals', m); }
+
+/* ============================================================
+   UI HELPERS
+   ============================================================ */
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const ni = document.getElementById('nav-' + id);
+  if (ni) ni.classList.add('active');
+  // refresh content for active page
+  if (id === 'home') renderHome();
+  if (id === 'planner') renderPlanner();
+  if (id === 'tracker') renderTracker();
+  if (id === 'recipes') renderRecipePage();
+  if (id === 'cook') calcEstimate();
+}
+
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function toast(msg, type='') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+function fmt(n) { return '₦' + Number(n).toLocaleString('en-NG'); }
+
+function toggleDark() {
+  const body = document.body;
+  const isDark = body.dataset.theme === 'dark';
+  body.dataset.theme = isDark ? 'light' : 'dark';
+  document.getElementById('darkBtn').textContent = isDark ? '🌙' : '☀️';
+  ls('mp_dark', !isDark);
+}
+
+/* ============================================================
+   HOME PAGE
+   ============================================================ */
+function renderHome() {
+  const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  const times = ["morning","morning","afternoon","afternoon","afternoon","afternoon","evening"];
+  const now = new Date();
+  const dayName = days[now.getDay()];
+  const h = now.getHours();
+  const greeting = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+  document.querySelector('.home-hero h1').textContent = greeting + '! 👋';
+  document.getElementById('todayChip').textContent = dayName;
+
+  // Tip
+  const tip = TIPS[Math.floor(Math.random() * TIPS.length)];
+  document.getElementById('tipText').textContent = tip;
+
+  // Today's meals
+  const plan = getWeekPlan();
+  const todayIdx = now.getDay() === 0 ? 6 : now.getDay() - 1;
+  const todayKey = DAYS[todayIdx];
+  document.getElementById('todaySubtitle').textContent = todayKey + "'s plan";
+  const todayMealsEl = document.getElementById('todayMeals');
+  const todayPlan = plan[todayKey] || {};
+  if (Object.keys(todayPlan).length === 0) {
+    todayMealsEl.innerHTML = `<div class="empty-state"><div class="icon">📅</div><h3>No meals planned for ${todayKey}</h3><p>Tap "Edit" to set up your meal plan</p></div>`;
+  } else {
+    todayMealsEl.innerHTML = MEAL_TIMES.map(mt => {
+      const m = todayPlan[mt];
+      return `<div class="meal-slot"><div class="meal-slot-info"><div class="meal-slot-label">${mt}</div>${m ? `<div class="meal-slot-name">${m.name}</div><div class="meal-slot-cost">${fmt(m.cost)}</div>` : '<div class="meal-slot-empty">Not planned</div>'}</div></div>`;
+    }).join('');
+  }
+
+  // Popular recipes (first 6)
+  const pr = document.getElementById('popularRecipes');
+  pr.innerHTML = RECIPES.slice(0,6).map(r => `
+    <div class="qa-card" style="min-width:140px;cursor:pointer;" onclick="openRecipe(${r.id})">
+      <div style="font-size:2rem;">${r.emoji}</div>
+      <div class="qa-title" style="font-size:0.8rem;">${r.name}</div>
+      <div class="qa-sub">${r.time} min · ${fmt(r.cost)}</div>
+    </div>
+  `).join('');
+
+  // Favorites
+  const favs = getFavorites();
+  const hf = document.getElementById('homeFavorites');
+  if (favs.length === 0) {
+    hf.innerHTML = `<div class="empty-state"><div class="icon">❤️</div><h3>No favourites yet</h3><p>Tap the heart on any recipe to save it here</p></div>`;
+  } else {
+    hf.innerHTML = favs.map(fid => {
+      const r = RECIPES.find(x => x.id === fid);
+      if (!r) return '';
+      return `<div class="meal-slot" style="margin-bottom:8px;" onclick="openRecipe(${r.id})">
+        <div class="meal-slot-info"><div class="meal-slot-name">${r.emoji} ${r.name}</div><div class="meal-slot-cost">${fmt(r.cost)}</div></div>
+        <button class="fav-btn" onclick="event.stopPropagation();toggleFavorite(${r.id})">❤️</button>
+      </div>`;
+    }).join('');
+  }
+}
+
+/* ============================================================
+   PLANNER
+   ============================================================ */
+function renderPlanner() {
+  const tabsEl = document.getElementById('dayTabs');
+  tabsEl.innerHTML = DAYS.map((d,i) => `<button class="day-tab ${i===currentDay?'active':''}" onclick="selectDay(${i})">${d.slice(0,3)}</button>`).join('');
+  renderDaySlots();
+}
+
+function selectDay(i) {
+  currentDay = i;
+  renderPlanner();
+}
+
+function renderDaySlots() {
+  const plan = getWeekPlan();
+  const dayKey = DAYS[currentDay];
+  const dayPlan = plan[dayKey] || {};
+  const el = document.getElementById('dayMealSlots');
+  el.innerHTML = MEAL_TIMES.map(mt => {
+    const m = dayPlan[mt];
+    return `<div class="meal-slot">
+      <div class="meal-slot-info">
+        <div class="meal-slot-label">${mt}</div>
+        ${m ? `<div class="meal-slot-name">${m.name}</div><div class="meal-slot-cost">${fmt(m.cost)}</div>`
+             : `<div class="meal-slot-empty">+ Add meal</div>`}
+      </div>
+      <div class="meal-slot-actions">
+        <button class="btn btn-primary btn-sm" onclick="openMealPicker('${dayKey}','${mt}')">${m?'Edit':'Add'}</button>
+        ${m ? `<button class="btn btn-ghost btn-sm" onclick="removeMeal('${dayKey}','${mt}')">✕</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function removeMeal(day, mt) {
+  const plan = getWeekPlan();
+  if (plan[day]) { delete plan[day][mt]; saveWeekPlan(plan); }
+  renderDaySlots();
+  toast('Meal removed');
+}
+
+function clearWeekPlan() {
+  if (confirm('Clear the entire week plan?')) { saveWeekPlan({}); renderDaySlots(); toast('Week plan cleared'); }
+}
+
+/* ============================================================
+   MEAL PICKER MODAL
+   ============================================================ */
+function openMealPicker(day, mt) {
+  currentMealSlot = { day, mt };
+  document.getElementById('mealPickerTitle').textContent = `Choose ${mt} for ${day}`;
+  pickerCatFilter = "All";
+  renderPickerGrid("");
+  renderPickerCats();
+  openModal('mealPickerModal');
+}
+
+function renderPickerCats() {
+  const el = document.getElementById('pickerCatFilter');
+  el.innerHTML = CATS.map(c => `<button class="cat-btn ${c===pickerCatFilter?'active':''}" onclick="setPickerCat('${c}')">${c}</button>`).join('');
+}
+
+function setPickerCat(cat) {
+  pickerCatFilter = cat;
+  renderPickerCats();
+  renderPickerGrid(document.getElementById('pickerSearch').value);
+}
+
+function filterMealPicker(q) { renderPickerGrid(q); }
+
+function getAllMeals() {
+  const custom = getCustomMeals().map((m,i) => ({...m, id: 'c'+i}));
+  return [...MEALS, ...custom];
+}
+
+function renderPickerGrid(q) {
+  let meals = getAllMeals();
+  if (pickerCatFilter !== "All") meals = meals.filter(m => m.cat === pickerCatFilter);
+  if (q) meals = meals.filter(m => m.name.toLowerCase().includes(q.toLowerCase()));
+  const plan = getWeekPlan();
+  const curMeal = (plan[currentMealSlot?.day] || {})[currentMealSlot?.mt];
+  document.getElementById('mealPickerGrid').innerHTML = meals.length === 0
+    ? `<div style="grid-column:1/-1;text-align:center;color:var(--gray-400);padding:20px;">No meals found</div>`
+    : meals.map(m => `<div class="meal-card-pick ${curMeal?.name===m.name?'selected':''}" onclick="selectMeal(${JSON.stringify(m).replace(/"/g,'&quot;')})">
+        <h4>${m.emoji || '🍽️'} ${m.name}</h4>
+        <div class="cost">${fmt(m.cost)}</div>
+        <div class="cat">${m.cat}</div>
+      </div>`).join('');
+}
+
+function selectMeal(meal) {
+  const plan = getWeekPlan();
+  if (!plan[currentMealSlot.day]) plan[currentMealSlot.day] = {};
+  plan[currentMealSlot.day][currentMealSlot.mt] = meal;
+  saveWeekPlan(plan);
+  closeModal('mealPickerModal');
+  renderDaySlots();
+  toast(`${meal.name} added to ${currentMealSlot.mt}!`, 'success');
+}
+
+function addCustomMeal() {
+  const name = document.getElementById('customMealName').value.trim();
+  const cost = parseInt(document.getElementById('customMealCost').value) || 0;
+  if (!name) { toast('Enter a meal name', 'error'); return; }
+  const custom = getCustomMeals();
+  custom.push({ name, cost, cat:'Custom', emoji:'🍽️', ingredients:[], servings:2 });
+  saveCustomMeals(custom);
+  document.getElementById('customMealName').value = '';
+  document.getElementById('customMealCost').value = '';
+  renderPickerGrid('');
+  toast('Custom meal added!', 'success');
+}
+
+/* ============================================================
+   COOK PAGE
+   ============================================================ */
+function switchCookTab(tab, btn) {
+  ['budget','ingredients','estimate'].forEach(t => document.getElementById('cook-'+t).style.display = t===tab?'block':'none');
+  if (btn) {
+    document.querySelectorAll('#page-cook .cat-filter .cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+}
+
+function setBudget(amt) {
+  document.getElementById('budgetAmount').value = amt;
+  suggestBudgetMeals();
+}
+
+function suggestBudgetMeals() {
+  const budget = parseInt(document.getElementById('budgetAmount').value) || 0;
+  const el = document.getElementById('budgetResults');
+  if (!budget) { el.innerHTML = ''; return; }
+  const eligible = getAllMeals().filter(m => m.cost <= budget).sort((a,b) => b.cost - a.cost);
+  if (eligible.length === 0) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">😔</div><h3>Hmm, that's quite tight</h3><p>With ${fmt(budget)}, try adding a bit more. Akara alone starts from ₦500.</p></div>`;
+    return;
+  }
+  // Show best value meals
+  const topMeals = eligible.slice(0, 8);
+  el.innerHTML = `
+    <div class="section-header"><div class="section-title">${eligible.length} meals within ${fmt(budget)}</div></div>
+    ${topMeals.map(m => `
+      <div class="suggested-meal-card">
+        <div class="smc-info">
+          <h4>${m.emoji || '🍽️'} ${m.name}</h4>
+          <p>${m.cat} · ${m.servings} servings · ${m.ingredients ? m.ingredients.slice(0,4).join(', ') + '...' : ''}</p>
+        </div>
+        <div class="smc-cost">${fmt(m.cost)}</div>
+      </div>
+    `).join('')}
+    ${eligible.length > 8 ? `<p class="text-sm text-gray" style="text-align:center;margin-top:8px;">+ ${eligible.length-8} more meals</p>` : ''}
+  `;
+}
+
+/* ============================================================
+   INGREDIENT MATCHER
+   ============================================================ */
+function handleIngInput(e) {
+  const val = document.getElementById('ingInput').value;
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    addIngredient(val.replace(',','').trim());
+  }
+}
+
+function addIngredient(val) {
+  if (!val) return;
+  val.split(',').forEach(v => {
+    const trimmed = v.trim().toLowerCase();
+    if (trimmed && !userIngredients.includes(trimmed)) {
+      userIngredients.push(trimmed);
+    }
+  });
+  document.getElementById('ingInput').value = '';
+  renderIngTags();
+}
+
+function removeIngredient(ing) {
+  userIngredients = userIngredients.filter(i => i !== ing);
+  renderIngTags();
+}
+
+function renderIngTags() {
+  document.getElementById('ingTags').innerHTML = userIngredients.map(i =>
+    `<div class="ing-tag">${i}<button onclick="removeIngredient('${i}')">×</button></div>`
+  ).join('');
+}
+
+function matchIngredients() {
+  if (userIngredients.length === 0) { toast('Add at least one ingredient', 'error'); return; }
+  const results = getAllMeals().map(m => {
+    const ing = m.ingredients || [];
+    const matched = ing.filter(i => userIngredients.some(u => i.toLowerCase().includes(u) || u.includes(i.toLowerCase().split(' ')[0])));
+    const missing = ing.filter(i => !userIngredients.some(u => i.toLowerCase().includes(u) || u.includes(i.toLowerCase().split(' ')[0])));
+    const pct = ing.length > 0 ? Math.round((matched.length / ing.length) * 100) : 0;
+    return { ...m, matched, missing, pct };
+  }).filter(m => m.pct >= 25).sort((a,b) => b.pct - a.pct);
+
+  const el = document.getElementById('matchResults');
+  if (results.length === 0) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">🤔</div><h3>No matches found</h3><p>Try adding more common ingredients like tomatoes, onions, or palm oil</p></div>`;
+    return;
+  }
+  el.innerHTML = results.slice(0,10).map(m => `
+    <div class="match-card">
+      <div class="match-header">
+        <span class="match-title">${m.emoji||'🍽️'} ${m.name}</span>
+        <span class="match-percent">${m.pct}% match</span>
+      </div>
+      <div class="match-bar-wrap"><div class="match-bar-fill" style="width:${m.pct}%"></div></div>
+      ${m.missing.length > 0 ? `<div class="match-missing">Still need: ${m.missing.slice(0,4).join(', ')}${m.missing.length>4?'...':''}</div>` : '<div class="match-missing" style="color:var(--green);">✓ You have everything!</div>'}
+    </div>
+  `).join('');
+}
+
+/* ============================================================
+   BUDGET ESTIMATOR
+   ============================================================ */
+function calcEstimate() {
+  const adults = parseInt(document.getElementById('estAdults')?.value) || 2;
+  const children = parseInt(document.getElementById('estChildren')?.value) || 0;
+  const days = parseInt(document.getElementById('estDays')?.value) || 7;
+  const mealsPerDay = parseInt(document.getElementById('estMeals')?.value) || 3;
+
+  const people = adults + (children * 0.6); // children eat less
+  const avgMealCostBudget = 500, avgMealCostStd = 900, avgMealCostPremium = 1600;
+
+  const calc = (base) => ({
+    daily: Math.round(base * people * mealsPerDay),
+    weekly: Math.round(base * people * mealsPerDay * days),
+    total: Math.round(base * people * mealsPerDay * days),
+  });
+
+  const budget = calc(avgMealCostBudget);
+  const std = calc(avgMealCostStd);
+  const premium = calc(avgMealCostPremium);
+
+  const el = document.getElementById('estimateResults');
+  el.innerHTML = [
+    { label:'Budget-Friendly', data:budget, desc:'Simple home cooking. Rice, beans, eggs.', pct:40, badge:'💚 Most affordable' },
+    { label:'Standard', data:std, desc:'Balanced meals with protein daily.', pct:70, badge:'⭐ Recommended', recommended:true },
+    { label:'Premium', data:premium, desc:'Variety, fish, meat, takeout occasionally.', pct:100, badge:'🌟 Comfortable' },
+  ].map(opt => `
+    <div class="budget-option ${opt.recommended?'recommended':''}">
+      <div class="budget-option-header">
+        <h4>${opt.label}</h4>
+        <span class="badge badge-${opt.recommended?'green':'gray'}">${opt.badge}</span>
+      </div>
+      <div class="budget-amount">${fmt(opt.data.total)}</div>
+      <div class="text-sm text-gray" style="margin-top:4px;">${opt.desc}</div>
+      <div class="budget-bar"><div class="budget-bar-fill" style="width:${opt.pct}%"></div></div>
+      <div class="text-sm text-gray" style="margin-top:6px;">Daily: ${fmt(opt.data.daily)} · Weekly: ${fmt(opt.data.weekly)}</div>
+    </div>
+  `).join('');
+}
+
+/* ============================================================
+   RECIPES PAGE
+   ============================================================ */
+function renderRecipePage() {
+  // Category filter
+  const allCats = ["All",...new Set(RECIPES.map(r => { const m = MEALS.find(mm=>mm.id===r.mealId); return m?.cat || 'Other'; }))];
+  document.getElementById('recipeCatFilter').innerHTML = allCats.map(c =>
+    `<button class="cat-btn ${c===recipeCatFilter?'active':''}" onclick="setRecipeCat('${c}')">${c}</button>`
+  ).join('');
+  renderRecipeGrid('');
+}
+
+function setRecipeCat(cat) {
+  recipeCatFilter = cat;
+  renderRecipePage();
+}
+
+function filterRecipes(q) { renderRecipeGrid(q); }
+
+function renderRecipeGrid(q) {
+  const favs = getFavorites();
+  let recipes = RECIPES;
+  if (recipeCatFilter !== 'All') {
+    const mealIds = MEALS.filter(m => m.cat === recipeCatFilter).map(m => m.id);
+    recipes = recipes.filter(r => mealIds.includes(r.mealId));
+  }
+  if (q) recipes = recipes.filter(r => r.name.toLowerCase().includes(q.toLowerCase()));
+  document.getElementById('recipeGrid').innerHTML = recipes.length === 0
+    ? `<div class="empty-state"><div class="icon">🔍</div><h3>No recipes found</h3></div>`
+    : recipes.map(r => `
+      <div class="recipe-card">
+        <div class="recipe-card-thumb">${r.emoji}</div>
+        <div class="recipe-card-body">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+            <h3>${r.name}</h3>
+            <button class="fav-btn" onclick="toggleFavorite(${r.id})">${favs.includes(r.id)?'❤️':'🤍'}</button>
+          </div>
+          <div class="recipe-meta">
+            <span class="recipe-meta-item">⏱ ${r.time} min</span>
+            <span class="recipe-meta-item">👥 ${r.servings} servings</span>
+            <span class="recipe-meta-item">💰 ${fmt(r.cost)}</span>
+          </div>
+          <div class="recipe-preview">${r.preview}</div>
+          <button class="btn btn-primary btn-full btn-sm" onclick="openRecipe(${r.id})">View Recipe</button>
+        </div>
+      </div>
+    `).join('');
+}
+
+function openRecipe(id) {
+  const r = RECIPES.find(x => x.id === id);
+  if (!r) return;
+  const favs = getFavorites();
+  document.getElementById('recipeModalContent').innerHTML = `
+    <div class="recipe-detail">
+      <div class="thumb">${r.emoji}</div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;">
+        <div>
+          <h2 class="modal-title" style="margin-bottom:4px;">${r.name}</h2>
+          <p class="text-sm text-gray">${r.preview}</p>
+        </div>
+        <button class="fav-btn" onclick="toggleFavoriteModal(${r.id})" id="recipeModalFav">${favs.includes(r.id)?'❤️':'🤍'}</button>
+      </div>
+      <div class="recipe-meta" style="margin-bottom:14px;">
+        <span class="badge badge-green">⏱ ${r.time} min</span>
+        <span class="badge badge-orange">👥 ${r.servings} servings</span>
+        <span class="badge badge-blue">💰 ${fmt(r.cost)}</span>
+      </div>
+      <div class="divider"></div>
+      <h4 class="section-title" style="margin-bottom:10px;">🧺 Ingredients</h4>
+      ${r.ingredients.map(i => `<div style="padding:5px 0;font-size:0.85rem;border-bottom:1px solid var(--gray-100);color:var(--gray-800);">• ${i}</div>`).join('')}
+      <div class="divider"></div>
+      <h4 class="section-title" style="margin-bottom:10px;">📋 Steps</h4>
+      ${r.steps.map((s,i) => `<div class="recipe-step"><div class="step-num">${i+1}</div><div class="step-text">${s}</div></div>`).join('')}
+    </div>
+  `;
+  // Track recently viewed
+  let rv = ls('mp_recent') || [];
+  rv = [id, ...rv.filter(x=>x!==id)].slice(0,10);
+  ls('mp_recent', rv);
+  openModal('recipeModal');
+}
+
+function toggleFavoriteModal(id) {
+  toggleFavorite(id);
+  const favs = getFavorites();
+  const btn = document.getElementById('recipeModalFav');
+  if (btn) btn.textContent = favs.includes(id) ? '❤️' : '🤍';
+}
+
+function toggleFavorite(id) {
+  let favs = getFavorites();
+  if (favs.includes(id)) { favs = favs.filter(f => f!==id); toast('Removed from favourites'); }
+  else { favs.push(id); toast('Added to favourites ❤️', 'success'); }
+  saveFavorites(favs);
+  renderRecipeGrid(document.getElementById('recipeSearch')?.value||'');
+}
+
+function showFavorites() {
+  const favs = getFavorites();
+  document.getElementById('favModalContent').innerHTML = favs.length === 0
+    ? `<div class="empty-state"><div class="icon">❤️</div><h3>No favourites yet</h3><p>Tap the heart icon on any recipe</p></div>`
+    : favs.map(fid => {
+        const r = RECIPES.find(x=>x.id===fid);
+        if (!r) return '';
+        return `<div class="meal-slot" style="margin-bottom:8px;cursor:pointer;" onclick="closeModal('favModal');openRecipe(${r.id})">
+          <div class="meal-slot-info"><div class="meal-slot-name">${r.emoji} ${r.name}</div><div class="meal-slot-cost">${fmt(r.cost)} · ${r.time} min</div></div>
+          <button class="fav-btn" onclick="event.stopPropagation();toggleFavorite(${r.id});showFavorites()">❤️</button>
+        </div>`;
+      }).join('');
+  openModal('favModal');
+}
+
+/* ============================================================
+   TRACKER
+   ============================================================ */
+function switchTrackerTab(tab, btn) {
+  ['tracker','shopping'].forEach(t => document.getElementById('tracker-'+t).style.display = t===tab?'block':'none');
+  if (btn) {
+    document.querySelectorAll('#page-tracker .cat-filter .cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  if (tab === 'shopping') renderShoppingList();
+  if (tab === 'tracker') renderExpenses();
+}
+
+function renderTracker() {
+  renderExpenses();
+}
+
+function logExpense() {
+  const desc = document.getElementById('expenseDesc').value.trim();
+  const amount = parseInt(document.getElementById('expenseAmount').value) || 0;
+  if (!desc || !amount) { toast('Fill in description and amount', 'error'); return; }
+  const expenses = getExpenses();
+  expenses.push({ desc, amount, date: new Date().toISOString() });
+  saveExpenses(expenses);
+  document.getElementById('expenseDesc').value = '';
+  document.getElementById('expenseAmount').value = '';
+  renderExpenses();
+  toast('Expense logged!', 'success');
+}
+
+function renderExpenses() {
+  const expenses = getExpenses();
+  const total = expenses.reduce((s,e) => s + e.amount, 0);
+  const weeklyBudget = ls('mp_weeklybudget') || 30000;
+  const pct = Math.min(100, Math.round((total / weeklyBudget) * 100));
+
+  document.getElementById('trackerSummary').innerHTML = `
+    <div class="tracker-stat"><div class="val">${fmt(total)}</div><div class="lbl">Total Spent</div></div>
+    <div class="tracker-stat"><div class="val" style="color:${weeklyBudget-total<0?'var(--red)':'var(--green)'}">${fmt(Math.max(0,weeklyBudget-total))}</div><div class="lbl">Remaining</div></div>
+    <div class="tracker-stat"><div class="val">${expenses.length}</div><div class="lbl">Transactions</div></div>
+  `;
+  document.getElementById('weeklyProgress').style.width = pct + '%';
+  document.getElementById('weeklyProgress').style.background = pct > 80 ? 'var(--red)' : pct > 60 ? 'var(--orange)' : 'var(--green)';
+
+  // Mini chart (last 7 days)
+  const chartEl = document.getElementById('miniChart');
+  const days7 = Array.from({length:7}, (_,i) => {
+    const d = new Date(); d.setDate(d.getDate() - (6-i));
+    return d.toISOString().slice(0,10);
+  });
+  const dayTotals = days7.map(d => expenses.filter(e => e.date.startsWith(d)).reduce((s,e)=>s+e.amount,0));
+  const maxDay = Math.max(...dayTotals, 1);
+  chartEl.innerHTML = dayTotals.map((v,i) => `<div class="mini-chart-bar" style="height:${Math.max(4, Math.round((v/maxDay)*56))}px;" title="${days7[i]}: ${fmt(v)}"></div>`).join('');
+
+  const list = document.getElementById('expenseList');
+  if (expenses.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="icon">📊</div><h3>No expenses logged yet</h3><p>Start tracking your food spending</p></div>`;
+    return;
+  }
+  list.innerHTML = [...expenses].reverse().map((e,i) => `
+    <div class="expense-item">
+      <div class="expense-info">
+        <h4>${e.desc}</h4>
+        <p>${new Date(e.date).toLocaleDateString('en-NG', {weekday:'short',month:'short',day:'numeric'})}</p>
+      </div>
+      <div class="expense-amount">${fmt(e.amount)}</div>
+    </div>
+  `).join('');
+}
+
+function clearExpenses() {
+  if (confirm('Clear all expense records?')) { saveExpenses([]); renderExpenses(); toast('Expenses cleared'); }
+}
+
+/* ============================================================
+   SHOPPING LIST
+   ============================================================ */
+function generateShoppingList() {
+  const plan = getWeekPlan();
+  const allIngredients = {};
+
+  Object.values(plan).forEach(dayPlan => {
+    Object.values(dayPlan).forEach(meal => {
+      const m = getAllMeals().find(x => x.name === meal.name);
+      if (m && m.ingredients) {
+        m.ingredients.forEach(ing => {
+          const key = ing.toLowerCase().trim();
+          allIngredients[key] = (allIngredients[key] || 0) + 1;
+        });
+      }
+    });
+  });
+
+  // Categorise
+  const categories = {
+    'Proteins': ['chicken','beef','fish','egg','meat','sardines','catfish','smoked','shrimp','tripe','goat','kpomo','snails','periwinkle'],
+    'Vegetables': ['tomatoes','spinach','pepper','onion','cabbage','carrot','okra','leafy','bitter leaf','efo','waterleaf','ugu','utazi','uziza','oha','ewedu'],
+    'Grains & Starches': ['rice','flour','garri','yam','plantain','semolina','pasta','spaghetti','noodles','amala','oat','wheat','cocoyam'],
+    'Oils & Fats': ['palm oil','vegetable oil','butter','margarine','coconut milk','oil'],
+    'Seasonings': ['salt','pepper','seasoning','crayfish','curry','thyme','bay','locust beans','iru','ogiri','potash','spice'],
+    'Others': [],
+  };
+
+  const grouped = {};
+  Object.entries(allIngredients).forEach(([ing, count]) => {
+    let cat = 'Others';
+    for (const [c, keywords] of Object.entries(categories)) {
+      if (keywords.some(k => ing.includes(k))) { cat = c; break; }
+    }
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push({ ing, count });
+  });
+
+  return grouped;
+}
+
+function renderShoppingList() {
+  const grouped = generateShoppingList();
+  const el = document.getElementById('shoppingListContent');
+  const entries = Object.entries(grouped).filter(([,items]) => items.length > 0);
+
+  if (entries.length === 0) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">🛒</div><h3>Shopping list is empty</h3><p>Add meals to your weekly plan first</p></div>
+      <button class="btn btn-primary btn-full" onclick="showPage('planner')">Go to Planner</button>`;
+    return;
+  }
+
+  el.innerHTML = entries.map(([cat, items]) => `
+    <div class="shopping-group">
+      <div class="shopping-group-title">${cat}</div>
+      ${items.map((item,i) => `
+        <div class="shopping-item" id="si-${cat}-${i}">
+          <input type="checkbox" onchange="toggleShoppingItem(this, 'si-${cat}-${i}')">
+          <span>${item.ing}</span>
+          ${item.count > 1 ? `<span class="qty">×${item.count}</span>` : ''}
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+function toggleShoppingItem(cb, id) {
+  const row = document.getElementById(id);
+  if (cb.checked) row.classList.add('checked'); else row.classList.remove('checked');
+}
+
+function printShopping() { window.print(); }
+
+function copyShopping() {
+  const grouped = generateShoppingList();
+  let text = '🛒 MealPilot Shopping List\n\n';
+  Object.entries(grouped).forEach(([cat, items]) => {
+    if (items.length > 0) {
+      text += `── ${cat} ──\n`;
+      items.forEach(i => { text += `• ${i.ing}${i.count>1?' ×'+i.count:''}\n`; });
+      text += '\n';
+    }
+  });
+  navigator.clipboard.writeText(text).then(() => toast('Shopping list copied!', 'success')).catch(() => toast('Could not copy', 'error'));
+}
+
+function downloadShopping() {
+  const grouped = generateShoppingList();
+  let text = '🛒 MealPilot Shopping List\n\n';
+  Object.entries(grouped).forEach(([cat, items]) => {
+    if (items.length > 0) {
+      text += `── ${cat} ──\n`;
+      items.forEach(i => { text += `• ${i.ing}${i.count>1?' ×'+i.count:''}\n`; });
+      text += '\n';
+    }
+  });
+  const blob = new Blob([text], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'mealpilot-shopping-list.txt';
+  a.click();
+  toast('Shopping list downloaded!', 'success');
+}
+
+/* ============================================================
+   EXPORT PDF (print-based)
+   ============================================================ */
+function exportPlanPDF() {
+  const plan = getWeekPlan();
+  let html = '<html><head><title>MealPilot — Weekly Plan</title><style>body{font-family:sans-serif;padding:20px;} table{width:100%;border-collapse:collapse;} th,td{border:1px solid #ddd;padding:8px;font-size:13px;} th{background:#0E7A3D;color:#fff;}</style></head><body>';
+  html += '<h2 style="color:#0E7A3D;">🍲 MealPilot — Weekly Meal Plan</h2>';
+  html += '<table><tr><th>Day</th><th>Breakfast</th><th>Lunch</th><th>Dinner</th></tr>';
+  DAYS.forEach(d => {
+    const dp = plan[d] || {};
+    html += `<tr><td><strong>${d}</strong></td><td>${dp.Breakfast?.name||'—'}</td><td>${dp.Lunch?.name||'—'}</td><td>${dp.Dinner?.name||'—'}</td></tr>`;
+  });
+  html += '</table></body></html>';
+  const w = window.open('','_blank');
+  w.document.write(html);
+  w.document.close();
+  w.print();
+}
+
+/* ============================================================
+   CLOSE MODAL ON OVERLAY CLICK
+   ============================================================ */
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) closeModal(overlay.id);
+  });
+});
+
+/* ============================================================
+   INIT
+   ============================================================ */
+function init() {
+  // Restore dark mode
+  if (ls('mp_dark')) {
+    document.body.dataset.theme = 'dark';
+    document.getElementById('darkBtn').textContent = '☀️';
+  }
+  // Seed weekly budget if not set
+  if (!ls('mp_weeklybudget')) ls('mp_weeklybudget', 30000);
+  // Initial render
+  renderHome();
+  calcEstimate();
+  renderRecipePage();
+  switchCookTab('budget');
+  switchTrackerTab('tracker');
+}
+
+init();
+</script>
+</body>
+</html>
