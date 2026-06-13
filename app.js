@@ -1,0 +1,1690 @@
+/* =============================================
+   MEALPILOT — app.js  v2.0
+   Updated with 2025 Nigerian market prices
+   + Real food photography via Unsplash
+   ============================================= */
+
+'use strict';
+
+// ─────────────────────────────────────────────
+//  CHICKEN REPUBLIC 2025 PRICE REFERENCE
+//  Source: topinfo.ng / chicken-republic.com (July 2025)
+//  Refuel Meal: ₦900–₦1,350
+//  Citizens Meal (2pc): ₦2,000–₦2,200
+//  Express Meal: ₦1,800
+//  Pot Lovers (8pc + sides + drinks): ₦9,000
+//
+//  HOME COOKING 2025 MARKET PRICES (Lagos/Abuja)
+//  Rice 50kg bag: ₦110,000–₦120,000 → ~₦2,400/kg
+//  Tomatoes basket: ₦18,000 → ~₦800/cup blended
+//  1 pot Jollof Rice (4 servings): ~₦8,500
+//  Egusi 500g: ~₦4,500  |  Palm oil 1L: ~₦2,500
+//  Chicken per kg: ~₦4,800  |  Eggs (crate 30): ₦3,800
+//  Yam per tuber: ₦6,000  |  Beans 1kg: ₦2,200
+//  Garri 1kg: ₦1,500  |  Indomie pack: ₦250
+//  Plantain (bunch): ₦3,000  |  Bread loaf: ₦1,200
+// ─────────────────────────────────────────────
+
+// ─────────────────────────────────────────────
+//  REAL FOOD IMAGES (Unsplash – free, no key needed)
+//  Format: https://images.unsplash.com/photo-ID?w=400&q=80
+// ─────────────────────────────────────────────
+const IMAGES = {
+  jollof:     'https://images.unsplash.com/photo-1604329760661-e71dc83f8f26?w=400&q=80',
+  fried_rice: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400&q=80',
+  rice_beans: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400&q=80',
+  egusi:      'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&q=80',
+  pepper_soup:'https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=400&q=80',
+  suya:       'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&q=80',
+  akara:      'https://images.unsplash.com/photo-1574484284002-952d92456975?w=400&q=80',
+  moi_moi:    'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&q=80',
+  yam_egg:    'https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=400&q=80',
+  plantain:   'https://images.unsplash.com/photo-1528825871115-3581a5387919?w=400&q=80',
+  puff_puff:  'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&q=80',
+  noodles:    'https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=400&q=80',
+  chicken:    'https://images.unsplash.com/photo-1598103442097-8b74394b95c2?w=400&q=80',
+  salad:      'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&q=80',
+  soup:       'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&q=80',
+  beans:      'https://images.unsplash.com/photo-1599789197514-47270cd526b4?w=400&q=80',
+  bread:      'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&q=80',
+  oatmeal:    'https://images.unsplash.com/photo-1517093602195-b40af9688fc1?w=400&q=80',
+  corn:       'https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=400&q=80',
+  snack:      'https://images.unsplash.com/photo-1621939514649-280e2ee25f60?w=400&q=80',
+  stew:       'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&q=80',
+  coconut:    'https://images.unsplash.com/photo-1621339830823-9e0c6c01fc72?w=400&q=80',
+  yam:        'https://images.unsplash.com/photo-1585032226651-759b368d7246?w=400&q=80',
+  swallow:    'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&q=80',
+  grilled:    'https://images.unsplash.com/photo-1544025162-d76538c0b77f?w=400&q=80',
+  default:    'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&q=80',
+};
+
+// ─────────────────────────────────────────────
+//  DATA: 55 NIGERIAN MEALS with 2025 prices
+// ─────────────────────────────────────────────
+const MEALS = [
+  // ── RICE ──
+  { id:1,  name:'Jollof Rice', category:'Rice', emoji:'🍚',
+    img: IMAGES.jollof,
+    cost:8500, servings:4,
+    note:'₦8,500 for 4 servings (≈₦2,125/person). Compare: Chicken Republic Refuel Jollof ₦900 single',
+    ingredients:['rice (1kg)','tomatoes (4 large)','red peppers','scotch bonnet','onion','vegetable oil','chicken (500g)','seasoning cubes','thyme','curry','bay leaf'] },
+
+  { id:2,  name:'Fried Rice', category:'Rice', emoji:'🍳',
+    img: IMAGES.fried_rice,
+    cost:10500, servings:4,
+    note:'Higher cost due to vegetables + protein',
+    ingredients:['rice (1kg)','carrot','green beans','green peas','eggs (3)','soy sauce','vegetable oil','chicken (500g)','onion','curry'] },
+
+  { id:3,  name:'Coconut Rice', category:'Rice', emoji:'🥥',
+    img: IMAGES.coconut,
+    cost:7500, servings:4,
+    note:'Coconut milk adds flavour & cost',
+    ingredients:['rice (1kg)','coconut milk (400ml)','tomatoes','peppers','onion','seasoning','vegetable oil'] },
+
+  { id:4,  name:'White Rice and Tomato Stew', category:'Rice', emoji:'🍲',
+    img: IMAGES.stew,
+    cost:7000, servings:4,
+    note:'Everyday staple, affordable at home',
+    ingredients:['rice (1kg)','tomatoes (5)','peppers','onion','vegetable oil','chicken (400g)','seasoning'] },
+
+  { id:5,  name:'Rice and Beans', category:'Rice', emoji:'🫘',
+    img: IMAGES.rice_beans,
+    cost:4500, servings:4,
+    note:'Budget king — filling, nutritious, cheap',
+    ingredients:['rice (500g)','honey beans (500g)','palm oil','pepper','onion','seasoning'] },
+
+  { id:6,  name:'Ofada Rice and Stew', category:'Rice', emoji:'🌿',
+    img: IMAGES.jollof,
+    cost:9500, servings:3,
+    note:'Premium local rice with assorted meat stew',
+    ingredients:['ofada rice (1kg)','assorted meat (400g)','palm oil','locust beans','peppers','onion','ponmo'] },
+
+  { id:7,  name:'Spaghetti Jollof', category:'Rice', emoji:'🍝',
+    img: IMAGES.jollof,
+    cost:5500, servings:4,
+    note:'Budget-friendly. CR spaghetti: ₦900 (Refuel)',
+    ingredients:['spaghetti (500g)','tomatoes','peppers','onion','vegetable oil','seasoning','chicken (300g)'] },
+
+  { id:8,  name:'Banga Rice', category:'Rice', emoji:'🌴',
+    img: IMAGES.stew,
+    cost:8000, servings:4,
+    note:'Delta delicacy — rich palm fruit base',
+    ingredients:['rice (1kg)','palm fruit extract','catfish','crayfish','peppers','onion','banga spice','seasoning'] },
+
+  // ── SOUPS ──
+  { id:9,  name:'Egusi Soup', category:'Soups', emoji:'🥣',
+    img: IMAGES.egusi,
+    cost:12000, servings:6,
+    note:'Market: egusi ₦4,500 + assorted meat ₦5,000+',
+    ingredients:['egusi (500g)','spinach','assorted meat (500g)','stockfish','palm oil','crayfish','onion','peppers','seasoning'] },
+
+  { id:10, name:'Okra Soup', category:'Soups', emoji:'🫑',
+    img: IMAGES.soup,
+    cost:9500, servings:5,
+    note:'In season, okra is cheap — great value',
+    ingredients:['okra (500g)','assorted meat (400g)','palm oil','crayfish','peppers','onion','seasoning','stockfish'] },
+
+  { id:11, name:'Banga Soup', category:'Soups', emoji:'🌴',
+    img: IMAGES.soup,
+    cost:11000, servings:5,
+    note:'Palm fruit + catfish — aromatic South-South favourite',
+    ingredients:['palm fruit (1 bunch)','catfish (500g)','crayfish','peppers','onion','banga spice','seasoning'] },
+
+  { id:12, name:'Oha Soup', category:'Soups', emoji:'🌿',
+    img: IMAGES.soup,
+    cost:10500, servings:5,
+    note:'Oha leaves are seasonal — price varies',
+    ingredients:['oha leaves','cocoyam (300g)','assorted meat (400g)','palm oil','crayfish','peppers','stockfish'] },
+
+  { id:13, name:'Efo Riro', category:'Soups', emoji:'🥬',
+    img: IMAGES.salad,
+    cost:9500, servings:5,
+    note:'Yoruba classic — tete (spinach) affordable',
+    ingredients:['fresh spinach (500g)','assorted meat (400g)','palm oil','peppers','onion','locust beans','crayfish','seasoning'] },
+
+  { id:14, name:'Afang Soup', category:'Soups', emoji:'🌱',
+    img: IMAGES.soup,
+    cost:13000, servings:5,
+    note:'Afang leaves premium-priced in Lagos',
+    ingredients:['afang leaves (400g)','waterleaf (400g)','assorted meat (400g)','palm oil','periwinkle','crayfish','seasoning'] },
+
+  { id:15, name:'Goat Pepper Soup', category:'Soups', emoji:'🌶️',
+    img: IMAGES.pepper_soup,
+    cost:10000, servings:4,
+    note:'Goat meat: ₦6,500/kg in 2025 markets',
+    ingredients:['goat meat (600g)','pepper soup spice','uziza leaves','peppers','onion','crayfish','seasoning'] },
+
+  { id:16, name:'Bitter Leaf Soup', category:'Soups', emoji:'🥗',
+    img: IMAGES.soup,
+    cost:9000, servings:5,
+    note:'Cocoyam thickener makes it hearty',
+    ingredients:['bitter leaf (washed)','cocoyam (400g)','assorted meat (400g)','palm oil','crayfish','peppers','seasoning'] },
+
+  { id:17, name:'Ogbono Soup', category:'Soups', emoji:'🫙',
+    img: IMAGES.soup,
+    cost:9500, servings:5,
+    note:'Ogbono: ₦3,500–₦4,500 per 200g in 2025',
+    ingredients:['ogbono seeds (200g)','spinach','assorted meat (400g)','palm oil','crayfish','peppers','seasoning'] },
+
+  { id:18, name:'Catfish Pepper Soup', category:'Soups', emoji:'🐟',
+    img: IMAGES.pepper_soup,
+    cost:11500, servings:4,
+    note:'Fresh catfish: ₦6,000–₦7,000/kg in 2025',
+    ingredients:['catfish (600g)','pepper soup spice','uziza','peppers','onion','seasoning','crayfish'] },
+
+  { id:19, name:'Edikang Ikong', category:'Soups', emoji:'🥦',
+    img: IMAGES.soup,
+    cost:12500, servings:5,
+    note:'Cross River classic — waterleaf + ugwu combo',
+    ingredients:['waterleaf (500g)','ugwu (500g)','assorted meat (400g)','palm oil','periwinkle','crayfish','seasoning'] },
+
+  // ── SWALLOWS ──
+  { id:20, name:'Eba and Egusi', category:'Swallows', emoji:'🫓',
+    img: IMAGES.swallow,
+    cost:5500, servings:3,
+    note:'Garri 1kg: ₦1,500. Very budget-friendly swallow',
+    ingredients:['garri (500g)','egusi (300g)','palm oil','assorted meat (300g)','crayfish','peppers','seasoning'] },
+
+  { id:21, name:'Pounded Yam and Egusi', category:'Swallows', emoji:'🍠',
+    img: IMAGES.yam,
+    cost:10500, servings:3,
+    note:'Yam tuber: ₦6,000 in 2025 — worth every kobo',
+    ingredients:['yam (1 tuber)','egusi (300g)','palm oil','assorted meat (400g)','crayfish','peppers','seasoning'] },
+
+  { id:22, name:'Fufu and Okra', category:'Swallows', emoji:'🍚',
+    img: IMAGES.swallow,
+    cost:7500, servings:3,
+    note:'Cassava fufu: affordable and filling',
+    ingredients:['cassava fufu (500g)','okra (400g)','palm oil','assorted meat (300g)','crayfish','peppers','seasoning'] },
+
+  { id:23, name:'Wheat Meal and Efo Riro', category:'Swallows', emoji:'🌾',
+    img: IMAGES.swallow,
+    cost:9000, servings:3,
+    note:'Healthier wheat option — slightly pricier',
+    ingredients:['wheat meal (500g)','spinach (400g)','assorted meat (400g)','palm oil','peppers','crayfish'] },
+
+  { id:24, name:'Semovita and Ogbono', category:'Swallows', emoji:'🫙',
+    img: IMAGES.swallow,
+    cost:8500, servings:3,
+    note:'Semovita 1kg: ₦2,200 in 2025',
+    ingredients:['semovita (500g)','ogbono (200g)','palm oil','assorted meat (350g)','crayfish','peppers','seasoning'] },
+
+  { id:25, name:'Amala and Ewedu', category:'Swallows', emoji:'🌿',
+    img: IMAGES.swallow,
+    cost:7000, servings:3,
+    note:'Ibadan classic — ewedu is very affordable',
+    ingredients:['plantain flour (500g)','jute leaves (ewedu)','palm oil','beef (400g)','peppers','crayfish','locust beans'] },
+
+  // ── BREAKFAST ──
+  { id:26, name:'Yam and Egg Sauce', category:'Breakfast', emoji:'🥚',
+    img: IMAGES.yam_egg,
+    cost:5500, servings:3,
+    note:'Eggs (crate ₦3,800 in 2025 → ~₦127/egg)',
+    ingredients:['yam (½ tuber)','eggs (4)','tomatoes','peppers','onion','vegetable oil','seasoning'] },
+
+  { id:27, name:'Akara and Pap', category:'Breakfast', emoji:'🫓',
+    img: IMAGES.akara,
+    cost:2500, servings:3,
+    note:'Beans 1kg: ₦2,200. Street akara: ₦200–500',
+    ingredients:['beans (peeled, 2 cups)','pepper','onion','vegetable oil','corn powder (pap)','water'] },
+
+  { id:28, name:'Moi Moi', category:'Breakfast', emoji:'🟤',
+    img: IMAGES.moi_moi,
+    cost:3500, servings:4,
+    note:'Great meal prep — make in batches',
+    ingredients:['beans (peeled, 3 cups)','peppers','onion','vegetable oil','eggs (2)','crayfish','seasoning','fish'] },
+
+  { id:29, name:'Noodles and Egg', category:'Breakfast', emoji:'🍜',
+    img: IMAGES.noodles,
+    cost:1200, servings:2,
+    note:'Indomie pack: ₦250 in 2025. Ultra-budget option',
+    ingredients:['indomie (2 packs)','eggs (2)','pepper','onion','vegetable oil','seasoning','carrot'] },
+
+  { id:30, name:'Bread and Egg Sauce', category:'Breakfast', emoji:'🍞',
+    img: IMAGES.bread,
+    cost:2000, servings:2,
+    note:'Bread loaf: ₦1,200 in 2025',
+    ingredients:['bread (half loaf)','eggs (3)','tomatoes','peppers','onion','vegetable oil'] },
+
+  { id:31, name:'Fried Plantain and Egg', category:'Breakfast', emoji:'🍌',
+    img: IMAGES.plantain,
+    cost:2800, servings:2,
+    note:'Ripe plantain: ₦500–800 each in 2025',
+    ingredients:['ripe plantain (2)','eggs (3)','tomato','pepper','onion','vegetable oil'] },
+
+  { id:32, name:'Oatmeal Porridge', category:'Breakfast', emoji:'🥣',
+    img: IMAGES.oatmeal,
+    cost:1800, servings:2,
+    note:'Healthy and filling. Oats: ₦2,500/500g',
+    ingredients:['rolled oats (2 cups)','milk','sugar','banana','cinnamon','nutmeg'] },
+
+  { id:33, name:'Yam Pottage (Asaro)', category:'Breakfast', emoji:'🍠',
+    img: IMAGES.yam,
+    cost:5000, servings:4,
+    note:'One-pot wonder — yam + palm oil + spinach',
+    ingredients:['yam (½ tuber)','palm oil','peppers','onion','crayfish','spinach','seasoning'] },
+
+  { id:34, name:'Beans Porridge', category:'Breakfast', emoji:'🫘',
+    img: IMAGES.beans,
+    cost:4000, servings:4,
+    note:'Add ripe plantain for sweetness and fullness',
+    ingredients:['brown beans (2 cups)','palm oil','peppers','onion','crayfish','seasoning','plantain (2)'] },
+
+  { id:35, name:'Agege Bread and Akara', category:'Breakfast', emoji:'🥐',
+    img: IMAGES.bread,
+    cost:2200, servings:2,
+    note:'Classic Lagos breakfast combo',
+    ingredients:['Agege bread (half loaf)','beans (1 cup)','pepper','onion','vegetable oil'] },
+
+  // ── SNACKS ──
+  { id:36, name:'Puff Puff', category:'Snacks', emoji:'🍩',
+    img: IMAGES.puff_puff,
+    cost:1800, servings:8,
+    note:'Makes ~24 balls. Street cost: ₦100–200 per ball',
+    ingredients:['flour (3 cups)','sugar','instant yeast','nutmeg','warm water','salt','vegetable oil'] },
+
+  { id:37, name:'Chin Chin', category:'Snacks', emoji:'🧁',
+    img: IMAGES.snack,
+    cost:2500, servings:10,
+    note:'Great for events — bulk is very affordable',
+    ingredients:['flour (3 cups)','sugar','butter','eggs (2)','coconut flavour','vegetable oil'] },
+
+  { id:38, name:'Boli and Groundnut', category:'Snacks', emoji:'🍌',
+    img: IMAGES.plantain,
+    cost:1500, servings:2,
+    note:'Street: ₦300–500 per boli. Very popular in Lagos',
+    ingredients:['ripe plantain (2)','roasted groundnut (100g)','salt','pepper sauce'] },
+
+  { id:39, name:'Suya', category:'Snacks', emoji:'🍢',
+    img: IMAGES.suya,
+    cost:5000, servings:3,
+    note:'Beef ₦5,500/kg in 2025. Street suya: ₦1,500–3,000',
+    ingredients:['beef (500g)','yaji spice','groundnut paste','onion','cabbage','tomatoes','pepper'] },
+
+  { id:40, name:'Roasted Corn', category:'Snacks', emoji:'🌽',
+    img: IMAGES.corn,
+    cost:800, servings:1,
+    note:'Seasonal — cheapest in June–September',
+    ingredients:['fresh corn (1 cob)','coconut (optional)','salt','pepper'] },
+
+  { id:41, name:'Fried Yam and Pepper Sauce', category:'Snacks', emoji:'🍟',
+    img: IMAGES.yam,
+    cost:3000, servings:3,
+    note:'Street: ₦500–1,000 per plate in 2025',
+    ingredients:['yam (½ tuber)','vegetable oil','tomatoes','peppers','onion','seasoning'] },
+
+  { id:42, name:'Kilishi', category:'Snacks', emoji:'🥩',
+    img: IMAGES.grilled,
+    cost:5500, servings:4,
+    note:'North Nigerian dried beef. Market price: ₦8,000–12,000/kg',
+    ingredients:['beef (500g)','groundnut paste','yaji spice','salt','seasoning'] },
+
+  { id:43, name:'Plantain Chips', category:'Snacks', emoji:'🍟',
+    img: IMAGES.plantain,
+    cost:1500, servings:4,
+    note:'Unripe plantain: ₦300 each. Great snack or side',
+    ingredients:['unripe plantain (2)','vegetable oil','salt','pepper'] },
+
+  // ── DELICACIES ──
+  { id:44, name:'Nkwobi', category:'Delicacies', emoji:'🥩',
+    img: IMAGES.grilled,
+    cost:12000, servings:4,
+    note:'Cow foot: ₦4,000–₦5,000/kg in 2025. Restaurant: ₦5,000+',
+    ingredients:['cow foot (1kg)','palm oil','ugba (oil bean)','utazi leaves','peppers','crayfish','seasoning','potash'] },
+
+  { id:45, name:'Isi Ewu', category:'Delicacies', emoji:'🐐',
+    img: IMAGES.pepper_soup,
+    cost:14000, servings:4,
+    note:'Goat head: ₦8,000–10,000 in 2025 markets',
+    ingredients:['goat head (1)','palm oil','ugba','utazi','peppers','crayfish','seasoning','potash'] },
+
+  { id:46, name:'Abacha (African Salad)', category:'Delicacies', emoji:'🥗',
+    img: IMAGES.salad,
+    cost:6500, servings:4,
+    note:'Cassava abacha: ₦1,500/cup. Roadside: ₦500–₦1,500',
+    ingredients:['cassava flakes (abacha)','ugba','palm oil','garden egg','crayfish','peppers','seasoning','onion','potash','utazi','smoked fish'] },
+
+  { id:47, name:'Ugba and Garden Egg', category:'Delicacies', emoji:'🫙',
+    img: IMAGES.salad,
+    cost:5000, servings:3,
+    note:'Oil bean (ugba): ₦2,500–3,500 per pack in 2025',
+    ingredients:['ugba (oil bean)','garden egg','palm oil','peppers','crayfish','seasoning'] },
+
+  { id:48, name:'Ukwa (Breadfruit)', category:'Delicacies', emoji:'🌰',
+    img: IMAGES.beans,
+    cost:8500, servings:4,
+    note:'Igbo delicacy — seasonal, often imported dried',
+    ingredients:['breadfruit (ukwa)','palm oil','peppers','seasoning','crayfish','uziza'] },
+
+  { id:49, name:'Miyan Kuka', category:'Delicacies', emoji:'🌿',
+    img: IMAGES.soup,
+    cost:7000, servings:4,
+    note:'Northern Nigerian soup — kuka (baobab) powder',
+    ingredients:['kuka leaves (baobab powder)','taushe (pumpkin)','palm oil','crayfish','peppers','onion','seasoning','meat'] },
+
+  { id:50, name:'Dan Wake', category:'Delicacies', emoji:'🫓',
+    img: IMAGES.beans,
+    cost:4500, servings:4,
+    note:'Bean dumplings in seasoned broth — Hausa favourite',
+    ingredients:['beans flour','potash','water','palm oil','peppers','crayfish','seasoning','eggs'] },
+
+  { id:51, name:'Tuwo Shinkafa and Miyan Kuka', category:'Swallows', emoji:'🍚',
+    img: IMAGES.swallow,
+    cost:5500, servings:3,
+    note:'Northern staple — soft rice swallow',
+    ingredients:['short-grain rice (500g)','water','salt'] },
+
+  { id:52, name:'Edikang Ikong', category:'Delicacies', emoji:'🥬',
+    img: IMAGES.soup,
+    cost:13500, servings:5,
+    note:'Premium Cross River soup — pricier but worth it',
+    ingredients:['waterleaf (500g)','ugwu (500g)','assorted meat','palm oil','periwinkle','crayfish','seasoning'] },
+
+  { id:53, name:'Coconut Candy', category:'Snacks', emoji:'🥥',
+    img: IMAGES.coconut,
+    cost:1200, servings:6,
+    note:'Simple, sweet treat. Coconut: ₦500 each',
+    ingredients:['coconut (1)','sugar (1 cup)','ginger'] },
+
+  { id:54, name:'Chicken Republic Refuel Meal', category:'Rice', emoji:'🍗',
+    img: IMAGES.chicken,
+    cost:1350, servings:1,
+    note:'Official CR price 2025: ₦1,350. 1pc chicken + rice/spaghetti + drink',
+    ingredients:['1 piece fried chicken','Jollof/Fried/White Rice or Spaghetti','coleslaw or moin moin','PET drink'] },
+
+  { id:55, name:'Chicken Republic Citizens Meal', category:'Rice', emoji:'🍗',
+    img: IMAGES.chicken,
+    cost:2200, servings:1,
+    note:'Official CR price 2025: ₦2,200. 2pc chicken + rice + drink + chips',
+    ingredients:['2 pieces fried chicken','Jollof or Fried Rice','coleslaw or moin moin','PET drink','regular chips'] },
+];
+
+// ─────────────────────────────────────────────
+//  DETAILED RECIPES (30 recipes) — updated prices
+// ─────────────────────────────────────────────
+const RECIPES = [
+  {
+    id:1, mealId:1, name:'Jollof Rice', emoji:'🍚', category:'Rice',
+    img: IMAGES.jollof,
+    cookTime:60, servings:4, cost:8500,
+    ingredients:['1kg long grain rice (₦2,400)','5 large tomatoes (₦2,000)','3 red peppers','2 scotch bonnet','2 large onions (₦600)','½ cup vegetable oil (₦500)','500g chicken (₦2,400)','2 seasoning cubes','1 tsp thyme','1 tsp curry','2 bay leaves','Salt to taste'],
+    steps:[
+      'Season chicken with diced onion, seasoning cubes, thyme, curry, salt. Fry or grill until golden. Set aside.',
+      'Blend tomatoes, peppers, and 1 onion into a smooth purée.',
+      'Heat oil in a heavy pot. Fry remaining sliced onion until golden.',
+      'Pour in blended tomato purée and cook on medium heat for 25 minutes, stirring regularly, until oil rises to the top.',
+      'Add chicken stock (or 3 cups water), bay leaves, and remaining seasoning. Taste.',
+      'Wash rice and add to the pot. Stir. Liquid should just cover the rice.',
+      'Cover tightly and cook on low heat for 30 minutes. Check halfway and add a splash of water if needed.',
+      'For "smoky" party rice: crank heat to high for the last 5 minutes to get a slight char at the bottom.',
+      'Fluff rice, add chicken back, and serve with fried plantain or salad.',
+    ]
+  },
+  {
+    id:2, mealId:9, name:'Egusi Soup', emoji:'🥣', category:'Soups',
+    img: IMAGES.egusi,
+    cookTime:50, servings:6, cost:12000,
+    ingredients:['500g ground egusi (₦4,500)','500g assorted meat (₦5,000)','150g stockfish (₦1,500)','3 tbsp palm oil (₦750)','2 tbsp ground crayfish (₦800)','1 large onion','3–4 scotch bonnet peppers','2 cups washed bitter leaf or spinach','2 seasoning cubes','Salt to taste'],
+    steps:[
+      'Cook assorted meat and stockfish with half the onion, salt, and 1 seasoning cube until tender. Reserve stock.',
+      'Mix egusi with a little water to form a thick paste. Season lightly.',
+      'Heat palm oil in a pot. Fry sliced onion and blended peppers for 10 minutes until fragrant.',
+      'Add egusi paste in lumps — do not stir yet. Fry for 5–8 minutes until slightly dry and golden.',
+      'Pour in meat stock (add water if needed). Add meat, stockfish, crayfish, and remaining seasoning.',
+      'Simmer on medium heat for 15 minutes. Taste and adjust salt.',
+      'Add washed bitter leaf or spinach. Stir and cook for 5 more minutes.',
+      'Serve hot with eba, pounded yam, or any swallow of choice.',
+    ]
+  },
+  {
+    id:3, mealId:27, name:'Akara (Bean Cakes)', emoji:'🫓', category:'Breakfast',
+    img: IMAGES.akara,
+    cookTime:30, servings:5, cost:2500,
+    ingredients:['2 cups black-eyed beans — peeled (₦1,800)','1 medium onion (₦200)','2 scotch bonnet peppers','1 tsp salt','Vegetable oil for deep frying (₦500)'],
+    steps:[
+      'Soak beans in water for 30 minutes, then rub between palms to remove the skin. Rinse several times until clean.',
+      'Blend beans with onion, peppers, and minimal water into a smooth, thick batter.',
+      'Whisk batter vigorously for 5 minutes to incorporate air — this is the key to fluffy akara.',
+      'Heat vegetable oil in a deep pot to 180°C (a drop of batter should sizzle immediately).',
+      'Scoop batter with a spoon and carefully lower into hot oil. Fry in batches for 3–4 minutes, turning once, until golden brown.',
+      'Drain on paper towels. Serve hot with pap (ogi) or as a street snack.',
+    ]
+  },
+  {
+    id:4, mealId:28, name:'Moi Moi', emoji:'🟤', category:'Breakfast',
+    img: IMAGES.moi_moi,
+    cookTime:60, servings:6, cost:3500,
+    ingredients:['3 cups black-eyed beans peeled (₦2,200)','3 red bell peppers (₦800)','2 scotch bonnet peppers','1 large onion','¼ cup vegetable oil (₦400)','2 hard-boiled eggs (₦260)','100g fish fillet (₦600)','2 tsp ground crayfish','2 seasoning cubes','Salt to taste'],
+    steps:[
+      'Peel beans by soaking and rubbing off skins. Blend smooth with peppers and onion using very little water.',
+      'Transfer to a bowl. Add oil, crayfish, seasoning cubes, and salt. Mix well.',
+      'Pour batter into greased aluminium foil cups or banana leaves. Add egg slices and fish pieces.',
+      'Fold or seal the cups tightly.',
+      'Arrange in a pot, add water to come halfway up the cups. Cover pot tightly.',
+      'Steam on medium heat for 45–50 minutes until set. Test with a toothpick — it should come out clean.',
+      'Cool slightly before unwrapping. Serve as a side dish or breakfast protein.',
+    ]
+  },
+  {
+    id:5, mealId:13, name:'Efo Riro', emoji:'🥬', category:'Soups',
+    img: IMAGES.salad,
+    cookTime:45, servings:5, cost:9500,
+    ingredients:['500g fresh spinach / tete (₦1,500)','400g assorted meat (₦4,000)','3 tbsp palm oil (₦750)','2 red bell peppers (₦600)','3 scotch bonnet peppers','1 large onion','2 tbsp locust beans (iru) (₦600)','2 tbsp ground crayfish (₦800)','2 seasoning cubes','Salt to taste'],
+    steps:[
+      'Cook assorted meat with onion, salt, and 1 seasoning cube until tender. Set aside.',
+      'Blend bell peppers and scotch bonnets. Set aside.',
+      'Heat palm oil in a wide pot. Add sliced onion and locust beans, fry for 3 minutes.',
+      'Pour in blended peppers. Fry on medium-high heat for 15–20 minutes, stirring often, until sauce is thick and oil floats.',
+      'Add cooked meat and a little stock. Stir in crayfish and remaining seasoning. Taste.',
+      'Simmer 5 minutes, then add washed spinach.',
+      'Stir gently and cook for only 3–5 minutes. Do not overcook — spinach should stay bright green.',
+      'Serve with any swallow, eba, or steamed rice.',
+    ]
+  },
+  {
+    id:6, mealId:26, name:'Yam and Egg Sauce', emoji:'🥚', category:'Breakfast',
+    img: IMAGES.yam_egg,
+    cookTime:30, servings:3, cost:5500,
+    ingredients:['½ yam tuber (₦3,000)','4 large eggs (₦500)','2 ripe tomatoes (₦600)','2 scotch bonnet peppers','1 medium onion (₦200)','3 tbsp vegetable oil (₦300)','1 seasoning cube','Salt to taste','Spring onions for garnish'],
+    steps:[
+      'Peel and cut yam into thick slices. Boil in salted water for 15–20 minutes until fork-tender. Drain.',
+      'Dice tomatoes, onion, and slice peppers.',
+      'Heat oil in a pan. Sauté onion until translucent, about 2 minutes.',
+      'Add tomatoes and peppers. Cook on medium heat for 5–7 minutes, stirring, until slightly reduced.',
+      'Break eggs into the sauce. Scramble gently or let them set — your preference.',
+      'Add seasoning cube and salt. Stir and remove from heat.',
+      'Serve egg sauce over hot boiled yam slices. Garnish with spring onions.',
+    ]
+  },
+  {
+    id:7, mealId:33, name:'Yam Pottage (Asaro)', emoji:'🍠', category:'Breakfast',
+    img: IMAGES.yam,
+    cookTime:40, servings:4, cost:5000,
+    ingredients:['½ tuber yam (₦3,000)','3 tbsp palm oil (₦750)','2 ripe tomatoes (₦600)','2 scotch bonnet peppers','1 large onion (₦200)','2 tbsp ground crayfish (₦600)','A handful of spinach','2 seasoning cubes','Salt to taste'],
+    steps:[
+      'Peel and cut yam into medium chunks. Rinse well.',
+      'Place yam in a pot, add water to cover, and boil for 10 minutes.',
+      'Add palm oil, blended tomatoes and peppers, sliced onion, crayfish, and seasoning. Stir.',
+      'Continue cooking on medium heat for 15–20 minutes until yam is very soft.',
+      'Mash a few yam pieces with a wooden spoon to thicken the pottage. Leave others chunky.',
+      'Add spinach, stir, and cook for 2 more minutes.',
+      'Taste, adjust salt and serve hot.',
+    ]
+  },
+  {
+    id:8, mealId:5, name:'Rice and Beans (Olele)', emoji:'🫘', category:'Rice',
+    img: IMAGES.rice_beans,
+    cookTime:60, servings:4, cost:4500,
+    ingredients:['500g long grain rice (₦1,200)','500g honey beans oloyin (₦1,100)','2 tbsp palm oil (₦500)','2 scotch bonnet peppers','1 large onion (₦200)','1 seasoning cube','Salt to taste'],
+    steps:[
+      'Sort and wash beans. Boil for 20 minutes, drain and rinse (this reduces gas-causing compounds).',
+      'Return beans to pot with fresh water. Cook until almost soft, about 20 minutes.',
+      'Add washed rice to the beans. Add enough water to come 2cm above the mixture.',
+      'Add palm oil, sliced onion, peppers, seasoning, and salt.',
+      'Stir, cover, and cook on low-medium heat for 25–30 minutes until both are fully cooked.',
+      'Stir gently. Serve with fried plantain or any protein of choice.',
+    ]
+  },
+  {
+    id:9, mealId:34, name:'Beans Porridge with Plantain', emoji:'🫘', category:'Breakfast',
+    img: IMAGES.beans,
+    cookTime:50, servings:4, cost:4000,
+    ingredients:['2 cups brown beans (₦2,200)','2 tbsp palm oil (₦500)','2 ripe plantains (₦1,000)','2 scotch bonnet peppers','1 large onion (₦200)','2 tbsp ground crayfish (₦600)','2 seasoning cubes','Salt to taste','Smoked fish optional (₦800)'],
+    steps:[
+      'Sort and wash beans. Boil for 5 minutes, discard water, and add fresh water to cook until soft.',
+      'When beans is almost done, add palm oil, blended peppers, sliced onion, crayfish, and seasoning.',
+      'Add smoked fish if using. Stir and continue cooking for 15 minutes.',
+      'Peel plantains, cut diagonally, and add to the pot.',
+      'Cook for another 10 minutes until plantain is soft and porridge has thickened.',
+      'Mash a few beans for creaminess. Taste and serve.',
+    ]
+  },
+  {
+    id:10, mealId:36, name:'Puff Puff', emoji:'🍩', category:'Snacks',
+    img: IMAGES.puff_puff,
+    cookTime:35, servings:8, cost:1800,
+    ingredients:['3 cups plain flour (₦600)','2 tsp instant yeast (₦200)','½ cup sugar (₦200)','½ tsp nutmeg','1½ cups warm water','1 tsp salt','Vegetable oil for deep frying (₦500)'],
+    steps:[
+      'Mix flour, yeast, sugar, nutmeg, and salt in a bowl.',
+      'Gradually add warm water and mix until you have a smooth, thick batter.',
+      'Cover with a damp cloth and leave in a warm spot for 45 minutes–1 hour until doubled in size.',
+      'Heat oil in a deep pot to 175°C.',
+      'Use a spoon or wet hand to scoop batter and drop round balls into hot oil.',
+      'Fry in batches for 3–4 minutes, turning regularly, until golden brown.',
+      'Drain on paper towels. Enjoy warm. Optionally dust with icing sugar.',
+    ]
+  },
+  {
+    id:11, mealId:2, name:'Nigerian Fried Rice', emoji:'🍳', category:'Rice',
+    img: IMAGES.fried_rice,
+    cookTime:50, servings:4, cost:10500,
+    ingredients:['1kg parboiled rice (₦2,400)','Mixed vegetables carrot, green beans, peas (₦1,500)','3 eggs (₦380)','300g chicken (₦1,440)','2 tbsp soy sauce (₦400)','1 tsp curry powder','1 large onion','3 tbsp vegetable oil (₦300)','Seasoning, salt, white pepper'],
+    steps:[
+      'Parboil rice until half-done, drain and spread to cool.',
+      'Season chicken and stir-fry in 1 tbsp oil until cooked. Remove and set aside.',
+      'In the same pot, scramble eggs in 1 tbsp oil. Push to the side.',
+      'Add remaining oil, sauté onion, add carrots and green beans, fry for 3 minutes.',
+      'Add rice to the pot. Mix everything together.',
+      'Add soy sauce, curry powder, seasoning, salt, and pepper. Toss well.',
+      'Add peas and protein. Stir-fry on high heat for 5 minutes until well combined.',
+      'Serve with fried chicken, coleslaw, or moin moin.',
+    ]
+  },
+  {
+    id:12, mealId:14, name:'Afang Soup', emoji:'🌱', category:'Soups',
+    img: IMAGES.soup,
+    cookTime:50, servings:5, cost:13000,
+    ingredients:['400g afang leaves sliced thin (₦3,500)','400g waterleaf (₦1,000)','400g assorted meat (₦4,000)','200g periwinkle (₦1,500)','3 tbsp palm oil (₦750)','3 tbsp ground crayfish (₦1,000)','Stockfish and smoked fish (₦1,500)','Seasoning cubes, peppers, salt'],
+    steps:[
+      'Cook assorted meat and stockfish with seasoning until tender. Reserve stock.',
+      'Rinse waterleaf and squeeze out excess water.',
+      'Heat palm oil in a pot. Add blended peppers and cook for 5 minutes.',
+      'Add meat, smoked fish, stockfish, crayfish, and remaining seasoning. Stir.',
+      'Add periwinkle and a little stock. Cook 5 minutes.',
+      'Add waterleaf, stir and cook for 3 minutes.',
+      'Add the sliced afang leaves (do not cover pot). Stir and cook for exactly 5 minutes.',
+      'Taste, adjust, and serve with any swallow.',
+    ]
+  },
+  {
+    id:13, mealId:39, name:'Suya', emoji:'🍢', category:'Snacks',
+    img: IMAGES.suya,
+    cookTime:30, servings:3, cost:5000,
+    ingredients:['500g beef sirloin or rump (₦2,750)','4 tbsp ground groundnut (₦500)','2 tbsp yaji suya spice (₦400)','1 tsp ginger powder','1 tsp garlic powder','1 tsp paprika','Salt to taste','Sliced tomatoes, onions, cabbage to serve (₦500)'],
+    steps:[
+      'Slice beef very thin — about 3–4mm thick.',
+      'Mix groundnut, yaji, ginger, garlic, paprika, and salt.',
+      'Coat each beef slice thoroughly with the spice mixture.',
+      'Thread onto skewers or lay flat on a wire rack.',
+      'Grill on a charcoal or gas grill at high heat for 5–6 minutes per side.',
+      'Brush with groundnut oil halfway through for shine and flavour.',
+      'Serve with fresh sliced onions, tomatoes, and cabbage.',
+    ]
+  },
+  {
+    id:14, mealId:15, name:'Goat Pepper Soup', emoji:'🌶️', category:'Soups',
+    img: IMAGES.pepper_soup,
+    cookTime:55, servings:4, cost:10000,
+    ingredients:['600g goat meat (₦3,900)','2 tbsp pepper soup spice mix (₦500)','2 scotch bonnet peppers','1 medium onion (₦200)','A handful of uziza leaves (₦500)','2 seasoning cubes (₦100)','2 tbsp ground crayfish (₦800)','Salt to taste'],
+    steps:[
+      'Wash goat meat thoroughly. Place in a pot.',
+      'Add sliced onion, seasoning cubes, salt, and half the pepper soup spice. Mix and steam 10 minutes.',
+      'Add 4–5 cups of water. Cook on medium-high for 25 minutes until almost tender.',
+      'Add blended scotch bonnets, crayfish, and remaining pepper soup spice.',
+      'Continue cooking for 10 minutes. Taste and adjust seasoning.',
+      'Add sliced uziza leaves. Cook 3 more minutes.',
+      'Serve hot in bowls. Best with boiled yam or alone as is.',
+    ]
+  },
+  {
+    id:15, mealId:46, name:'Abacha (African Salad)', emoji:'🥗', category:'Delicacies',
+    img: IMAGES.salad,
+    cookTime:20, servings:4, cost:6500,
+    ingredients:['2 cups cassava abacha (₦1,500)','200g ugba oil bean (₦2,000)','3 tbsp palm oil (₦750)','1 tsp potash dissolved in water (₦200)','2 tbsp ground crayfish (₦600)','3 garden eggs (₦400)','Utazi leaves, peppers, onion (₦500)','Smoked fish (₦800)','Salt, seasoning cubes'],
+    steps:[
+      'Soak abacha in hot water for 10 minutes until softened. Drain and rinse with cold water.',
+      'Mix palm oil with the potash solution until it emulsifies into a bright orange paste.',
+      'Season palm oil mix with crayfish, crumbled seasoning, salt, and sliced peppers.',
+      'Add ugba, abacha, and shredded smoked fish to the palm oil mix. Toss to combine.',
+      'Slice garden eggs into wedges and add.',
+      'Chiffonade utazi leaves and toss in.',
+      'Taste, adjust. Add sliced onion rings on top. Serve immediately.',
+    ]
+  },
+  {
+    id:16, mealId:6, name:'Ofada Rice and Ayamase Stew', emoji:'🌿', category:'Rice',
+    img: IMAGES.jollof,
+    cookTime:60, servings:3, cost:9500,
+    ingredients:['1kg ofada rice (₦3,500)','400g assorted meat (₦4,000)','3 red bell peppers (₦900)','5 tatashe peppers','5 scotch bonnet peppers','3 tbsp palm oil (₦750)','3 tbsp locust beans (₦600)','Seasoning, crayfish, salt'],
+    steps:[
+      'Wash ofada rice thoroughly (it stays slightly earthy). Cook until tender, drain.',
+      'Cook assorted meat with seasoning and onion. Reserve stock.',
+      'Dry-roast tatashe and scotch bonnet peppers in a hot pan until slightly charred.',
+      'Blend the roasted peppers roughly — keep some texture.',
+      'Heat palm oil until very hot. Add locust beans, fry 1 minute.',
+      'Pour in blended peppers. Fry on medium-high for 20–25 minutes, stirring constantly.',
+      'Add cooked meat and a little stock. Season, add crayfish. Cook 10 more minutes.',
+      'Serve ofada rice wrapped in banana leaf with stew.',
+    ]
+  },
+  {
+    id:17, mealId:3, name:'Coconut Rice', emoji:'🥥', category:'Rice',
+    img: IMAGES.coconut,
+    cookTime:40, servings:4, cost:7500,
+    ingredients:['1kg rice (₦2,400)','400ml coconut milk (₦2,000)','2 cups water','2 tomatoes (₦600)','2 peppers','1 onion (₦200)','2 tbsp vegetable oil','Seasoning, salt','Chicken or prawns optional (₦2,000)'],
+    steps:[
+      'Wash and drain rice.',
+      'Heat oil, sauté sliced onion until soft.',
+      'Add blended tomatoes and peppers. Fry 8 minutes.',
+      'Add coconut milk, water, seasoning, and salt. Bring to a boil.',
+      'Add rice. Stir once and cover tightly. Cook on low-medium for 25–30 minutes.',
+      'Stir-fry protein separately and add in last 5 minutes if using.',
+      'Fluff gently and serve with coleslaw or fried plantain.',
+    ]
+  },
+  {
+    id:18, mealId:10, name:'Okra Soup', emoji:'🫑', category:'Soups',
+    img: IMAGES.soup,
+    cookTime:40, servings:5, cost:9500,
+    ingredients:['500g fresh okra (₦2,500)','400g assorted meat (₦4,000)','100g stockfish (₦1,000)','3 tbsp palm oil (₦750)','2 tbsp ground crayfish (₦800)','2 scotch bonnet peppers','1 onion (₦200)','Seasoning cubes, salt'],
+    steps:[
+      'Cook meat and stockfish with seasoning and onion until tender. Reserve stock.',
+      'Wash okra and chop very finely (or blend roughly) for draw soup texture.',
+      'Heat palm oil in a pot. Add blended peppers and fry for 5 minutes.',
+      'Add meat, stockfish, crayfish, and enough stock. Bring to a boil.',
+      'Add okra and stir vigorously. Do not cover pot.',
+      'Cook on medium heat for 8–10 minutes, stirring often.',
+      'Taste and adjust. Serve with any swallow.',
+    ]
+  },
+  {
+    id:19, mealId:7, name:'Spaghetti Jollof', emoji:'🍝', category:'Rice',
+    img: IMAGES.jollof,
+    cookTime:35, servings:4, cost:5500,
+    ingredients:['500g spaghetti (₦1,200)','4 tomatoes (₦1,600)','3 peppers','1 large onion (₦200)','¼ cup vegetable oil (₦250)','1 tsp thyme','1 tsp curry','2 seasoning cubes','Salt to taste','Chicken 300g optional (₦1,440)'],
+    steps:[
+      'Boil spaghetti for 5 minutes (half-cooked). Drain and set aside.',
+      'Blend tomatoes, peppers, and half the onion.',
+      'Heat oil, fry remaining sliced onion. Add tomato blend and cook 15 minutes until reduced.',
+      'Add thyme, curry, seasoning, and a cup of water. Taste.',
+      'Add spaghetti. Toss to coat fully. Cook on low heat 10–12 minutes, stirring occasionally.',
+      'Serve hot with fried plantain or protein.',
+    ]
+  },
+  {
+    id:20, mealId:29, name:'Noodles and Egg', emoji:'🍜', category:'Breakfast',
+    img: IMAGES.noodles,
+    cookTime:15, servings:2, cost:1200,
+    ingredients:['2 packs Indomie noodles (₦500)','2 eggs (₦260)','1 carrot sliced (₦100)','1 onion (₦100)','1 pepper','2 tbsp vegetable oil (₦200)','Salt to taste'],
+    steps:[
+      'Boil noodles for 2–3 minutes until half-done. Drain and set aside.',
+      'Heat oil in a pan. Sauté onion and pepper for 1 minute.',
+      'Add carrot slices. Stir-fry 2 minutes.',
+      'Break eggs into the pan and scramble.',
+      'Add drained noodles, seasoning from the packet, and salt.',
+      'Toss everything together for 2 minutes on medium heat.',
+      'Serve immediately while hot.',
+    ]
+  },
+  {
+    id:21, mealId:38, name:'Boli and Groundnut', emoji:'🍌', category:'Snacks',
+    img: IMAGES.plantain,
+    cookTime:20, servings:2, cost:1500,
+    ingredients:['2 ripe plantains (₦1,000)','100g roasted groundnut (₦400)','Salt to taste','Pepper sauce optional'],
+    steps:[
+      'Peel plantains and score lightly with a knife.',
+      'Place on a hot grill or directly over medium gas flame.',
+      'Turn every 4–5 minutes until all sides are charred and cooked through — about 15–18 minutes total.',
+      'Serve hot with roasted groundnut and optional pepper sauce.',
+    ]
+  },
+  {
+    id:22, mealId:31, name:'Fried Plantain and Egg', emoji:'🍌', category:'Breakfast',
+    img: IMAGES.plantain,
+    cookTime:20, servings:2, cost:2800,
+    ingredients:['2 ripe plantains (₦1,000)','3 eggs (₦380)','1 tomato (₦300)','1 pepper','1 small onion (₦150)','2 tbsp vegetable oil (₦200)','Salt to taste'],
+    steps:[
+      'Peel plantains and slice diagonally.',
+      'Heat 1 tbsp oil. Fry plantain slices on both sides until golden brown. Set aside.',
+      'In the same pan, add remaining oil. Sauté onion, diced tomato and pepper for 2 minutes.',
+      'Break in eggs and scramble to desired consistency.',
+      'Season with salt. Serve egg sauce alongside fried plantain.',
+    ]
+  },
+  {
+    id:23, mealId:25, name:'Amala and Ewedu', emoji:'🌿', category:'Swallows',
+    img: IMAGES.swallow,
+    cookTime:30, servings:3, cost:7000,
+    ingredients:['2 cups plantain flour elubo (₦2,000)','3 cups water for amala','300g jute leaves ewedu (₦800)','2 tbsp palm oil (₦500)','1 tbsp ground crayfish (₦500)','Beef stew and gbegiri (₦2,500)','Seasoning, salt'],
+    steps:[
+      'Boil water in a pot. Gradually pour plantain flour while stirring vigorously to avoid lumps.',
+      'Stir on low heat for 8–10 minutes until smooth and stretchy. Cover to keep warm.',
+      'Wash jute leaves and blend or use a traditional broom (ijabe) to break down the texture.',
+      'In a small pot, add blended ewedu with water, peppers, crayfish, and seasoning.',
+      'Cook on medium heat for 10 minutes, stirring regularly. Add palm oil.',
+      'Serve amala with ewedu and beef stew (and gbegiri/bẹan soup if available).',
+    ]
+  },
+  {
+    id:24, mealId:44, name:'Nkwobi', emoji:'🥩', category:'Delicacies',
+    img: IMAGES.grilled,
+    cookTime:90, servings:4, cost:12000,
+    ingredients:['1kg cow foot bokoto (₦5,000)','3 tbsp palm oil (₦750)','2 tsp potash dissolved in 2 tbsp water','100g ugba oil bean (₦1,500)','Utazi leaves (₦500)','3 scotch bonnet peppers','1 onion','2 tbsp ground crayfish (₦800)','Salt, seasoning cubes'],
+    steps:[
+      'Clean cow foot thoroughly. Cook with onion, seasoning, and salt for 60–75 minutes until very tender.',
+      'Cut into bite-size chunks. Reserve a little stock.',
+      'Mix palm oil and potash solution together — it will emulsify into an orange-yellow paste.',
+      'Add crayfish, blended peppers, and crumbled seasoning to the palm oil paste.',
+      'Add cooked cow foot and ugba to the sauce. Toss to coat thoroughly.',
+      'Taste and adjust. Transfer to a serving pot.',
+      'Chiffonade utazi leaves and scatter over the top. Serve warm with palm wine.',
+    ]
+  },
+  {
+    id:25, mealId:11, name:'Banga Soup', emoji:'🌴', category:'Soups',
+    img: IMAGES.soup,
+    cookTime:60, servings:5, cost:11000,
+    ingredients:['1 bunch palm fruits (₦3,000)','500g catfish or assorted meat (₦3,500)','2 tbsp ground crayfish (₦800)','2 scotch bonnet peppers','1 onion','Banga spice mix oruwo (₦500)','Bitter leaf optional (₦500)','Salt, seasoning cubes'],
+    steps:[
+      'Boil palm fruits for 20 minutes until soft. Pound in a mortar and extract juice by squeezing with water.',
+      'Strain out chaff. You should have rich palm fruit extract.',
+      'Boil the extract in a pot, stirring regularly. Skim froth.',
+      'When it reduces and thickens slightly (about 15 minutes), add meat or fish.',
+      'Add crayfish, blended peppers, onion, and banga spice mix.',
+      'Cook for 15–20 minutes until soup is rich and fragrant. Season to taste.',
+      'Add bitter leaf in the last 5 minutes optionally. Serve with starch, eba, or pounded yam.',
+    ]
+  },
+  {
+    id:26, mealId:4, name:'White Rice and Tomato Stew', emoji:'🍲', category:'Rice',
+    img: IMAGES.stew,
+    cookTime:45, servings:4, cost:7000,
+    ingredients:['1kg long grain rice (₦2,400)','5 tomatoes (₦2,000)','3 peppers','1 large onion (₦200)','¼ cup vegetable oil (₦250)','500g chicken (₦2,400)','Seasoning, curry, salt'],
+    steps:[
+      'Wash and cook rice with salted water until done. Drain and set aside.',
+      'Season and fry or grill chicken. Set aside.',
+      'Blend tomatoes, peppers, and half the onion.',
+      'Heat oil, fry sliced onion until golden.',
+      'Add tomato blend. Cook on medium heat 20–25 minutes until oil floats to the top.',
+      'Add chicken and stock. Simmer 10 minutes. Taste and adjust.',
+      'Serve stew poured over rice with a side of fried plantain.',
+    ]
+  },
+  {
+    id:27, mealId:17, name:'Ogbono Soup', emoji:'🫙', category:'Soups',
+    img: IMAGES.soup,
+    cookTime:45, servings:5, cost:9500,
+    ingredients:['200g ground ogbono seeds (₦4,000)','500g assorted meat (₦5,000)','3 tbsp palm oil (₦750)','2 tbsp crayfish (₦800)','3 peppers','1 onion','Spinach or bitter leaf (₦800)','Seasoning, salt'],
+    steps:[
+      'Cook assorted meat until tender. Reserve stock.',
+      'Heat palm oil in pot on medium heat.',
+      'Add ground ogbono directly to the oil. Stir quickly — it will form strings and become fragrant.',
+      'Add hot meat stock gradually, stirring constantly to keep it smooth.',
+      'Add meat, crayfish, blended peppers, and seasoning. Stir.',
+      'Cook on low-medium heat for 15 minutes, stirring regularly.',
+      'Add spinach or bitter leaf. Cook 3–5 more minutes. Serve with any swallow.',
+    ]
+  },
+  {
+    id:28, mealId:21, name:'Pounded Yam and Egusi', emoji:'🍠', category:'Swallows',
+    img: IMAGES.yam,
+    cookTime:60, servings:3, cost:10500,
+    ingredients:['1 tuber yam (₦6,000)','300g ground egusi (₦2,700)','Assorted meat 300g (₦3,000)','3 tbsp palm oil (₦750)','Crayfish, peppers, seasoning (₦1,200)'],
+    steps:[
+      'Peel and cut yam into chunks. Boil in salted water until very soft, about 25–30 minutes.',
+      'Drain water completely. Pound in a mortar until smooth and stretchy with no lumps. Or blend in a food processor.',
+      'Keep hot and moist. Mold into balls for serving.',
+      'For egusi: heat palm oil, fry blended peppers, add egusi paste, meat, crayfish, and stock.',
+      'Cook egusi for 20–25 minutes until oil floats. Add vegetables and simmer 5 minutes.',
+      'Serve pounded yam alongside the egusi soup.',
+    ]
+  },
+  {
+    id:29, mealId:32, name:'Oatmeal with Banana', emoji:'🥣', category:'Breakfast',
+    img: IMAGES.oatmeal,
+    cookTime:15, servings:2, cost:1800,
+    ingredients:['2 cups rolled oats (₦800)','3 cups milk or water','2 ripe bananas (₦400)','2 tbsp honey or sugar (₦200)','½ tsp cinnamon','A pinch of nutmeg'],
+    steps:[
+      'Bring milk or water to a gentle boil.',
+      'Add oats, stir, and reduce heat to low.',
+      'Cook for 5–7 minutes, stirring occasionally, until desired consistency.',
+      'Add honey or sugar and cinnamon. Stir.',
+      'Slice bananas on top. Sprinkle nutmeg. Serve warm.',
+    ]
+  },
+  {
+    id:30, mealId:41, name:'Fried Yam and Pepper Sauce', emoji:'🍟', category:'Snacks',
+    img: IMAGES.yam,
+    cookTime:25, servings:3, cost:3000,
+    ingredients:['½ tuber yam (₦3,000)','Vegetable oil for frying (₦500)','2 tomatoes (₦600)','3 peppers','1 onion (₦200)','Seasoning, salt'],
+    steps:[
+      'Peel yam and cut into thick sticks or slices.',
+      'Rinse and pat dry with a paper towel.',
+      'Heat oil in a deep pan. Fry yam in batches until golden and crispy — about 8 minutes.',
+      'For pepper sauce: blend and fry tomatoes, peppers, and onion in a little oil for 10 minutes.',
+      'Season sauce with seasoning cube and salt.',
+      'Drain yam on paper towels. Serve hot with dipping sauce.',
+    ]
+  },
+];
+
+// ─────────────────────────────────────────────
+//  FOOD TIPS  (updated with 2025 prices)
+// ─────────────────────────────────────────────
+const FOOD_TIPS = [
+  '💧 Parboil rice before Jollof — this gives you the "party rice" texture. The SBM Jollof Index (2025) puts one pot of jollof at ₦25,486 — make it count!',
+  '🧅 Always fry your tomato stew until the oil separates and floats — roughly 20–25 minutes. This means the stew is properly cooked and will last longer.',
+  '🌿 Add leafy vegetables (efo, bitter leaf, uziza) last and only cook for 3–5 minutes. This preserves colour, nutrients, and flavour.',
+  '💰 Tomatoes basket hit ₦18,000 in 2025. Buy in season, blend in bulk, and freeze in ice cube trays — each cube = 1 soup portion.',
+  '🐟 Stockfish adds deep umami flavour to soups at a much lower cost than fresh fish. Soak overnight before cooking.',
+  '🌴 At current prices, palm oil is ₦2,500+ per litre. Buy 10L from the market directly — you save up to 30% vs sachet purchases.',
+  '🍌 For the sweetest fried plantain, the skin must have dark patches — the darker the skin, the sweeter the plantain.',
+  '🧆 Whisking akara batter vigorously for 5 minutes before frying incorporates air for a light, fluffy result. This is the secret every Lagos aunty knows.',
+  '📦 Indomie noodles are ₦250/pack in 2025. Add eggs (₦127 each), carrot, and onion for a complete ₦600 meal for two.',
+  '🫘 Soaking beans for 2 hours before cooking reduces cook time by 40% and reduces gas-causing compounds.',
+  '🔥 For smoky Jollof Rice (party-style), crank up the heat in the final 5 minutes. Let it catch slightly at the bottom — Nigerians call this "party rice".',
+  '🍳 Save leftover frying oil — it picks up flavour from plantain or chicken and makes your next stew even better.',
+  '💡 Chicken Republic\'s Refuel Meal (₦1,350 in 2025) is the benchmark for what a single home-cooked meal should cost. Beat it by cooking a full pot!',
+  '🌽 Roasted corn is cheapest June–September (harvest season). A cob on the street: ₦400–800 in 2025.',
+  '🍠 One yam tuber costs ₦6,000 in 2025. Cut into thirds: Breakfast is asaro, lunch is yam and egg, dinner is pottage — three meals, one tuber.',
+  '🥚 A crate of 30 eggs is ₦3,800 in 2025 (≈₦127 per egg). Eggs are your most affordable complete protein — use them daily.',
+  '🛒 Plan meals on Sunday, shop Monday when markets are freshest. Compare: open market is 30–50% cheaper than supermarkets for the same ingredients.',
+  '🍲 Egusi or Ogbono soup made in bulk lasts 3–4 days in the fridge and 3 months in the freezer. Cook once, eat many times.',
+  '🌶️ Scotch bonnet freezes whole beautifully. Buy a big bag at market price (₦2,000–₦3,000) and freeze for months of use.',
+  '💸 In 2025, feeding an adult in Lagos on a budget costs approx ₦1,200–₦1,500/day cooking at home vs ₦2,000–₦4,000 eating out daily.',
+];
+
+// ─────────────────────────────────────────────
+//  CHICKEN REPUBLIC REFERENCE PRICES (2025)
+// ─────────────────────────────────────────────
+const CR_PRICES = {
+  'Refuel Meal (1pc chicken + rice)': 900,
+  'Refuel Max Meal (+ coleslaw/moin moin + drink)': 1350,
+  'Refuel Dodo Meal (chicken + rice + plantain)': 1200,
+  'Refuel Dodo Max (+ drink)': 1350,
+  'Citizens Meal (2pc + rice + drink)': 2000,
+  'Citizens Meal with Chips': 2200,
+  'Express Meal (chicken + chips + drink)': 1800,
+  'ChickWhizz (sandwich)': 1400,
+  'Chief Burger': 1900,
+  'Chief Burger Meal (+ chips + drink)': 3100,
+  'Pot Lovers (8pc + 4 rice + sides + drinks)': 9000,
+  'Mega Pot Lovers (10pc + 6 rice + sides + drinks)': 12000,
+  'Big Crew Meal (full rotisserie + 4 rice + sides + drinks)': 9500,
+};
+
+// ─────────────────────────────────────────────
+//  INGREDIENT → CATEGORY MAP
+// ─────────────────────────────────────────────
+const INGREDIENT_CATS = {
+  Proteins: ['chicken','beef','goat meat','fish','catfish','shrimp','eggs','stockfish','smoked fish','assorted meat','ponmo','tripe','cow foot','periwinkle','crayfish','dried crayfish','kilishi'],
+  Vegetables: ['tomatoes','peppers','onion','scotch bonnet','spinach','bitter leaf','okra','carrot','green beans','garden egg','ugwu','efo','waterleaf','afang leaves','jute leaves','utazi','uziza','ugba','ewedu','tatashe','cabbage'],
+  Grains: ['rice','spaghetti','noodles','indomie','beans','garri','fufu','yam','plantain','wheat meal','semovita','flour','oats','corn','abacha','cassava','breadfruit'],
+  Seasonings: ['salt','seasoning cubes','maggi','curry powder','thyme','bay leaf','pepper soup spice','yaji','banga spice','potash','locust beans','nutmeg','cinnamon','soy sauce','tomato paste'],
+  Oils: ['palm oil','vegetable oil','coconut milk','butter','groundnut oil'],
+  Others: ['water','sugar','milk','groundnut','coconut','honey','yeast','ginger','garlic'],
+};
+
+// ─────────────────────────────────────────────
+//  DAYS / MEAL TIMES
+// ─────────────────────────────────────────────
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const MEAL_TIMES = ['breakfast','lunch','dinner'];
+
+// ─────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────
+let state = {
+  plan: {},
+  favourites: new Set(),
+  expenses: [],
+  monthlyBudgetGoal: 0,
+  darkMode: false,
+  tipIndex: 0,
+  recentRecipes: [],
+};
+
+// ─────────────────────────────────────────────
+//  LOCAL STORAGE
+// ─────────────────────────────────────────────
+function saveState() {
+  const toSave = { plan: state.plan, favourites: [...state.favourites], expenses: state.expenses, monthlyBudgetGoal: state.monthlyBudgetGoal, darkMode: state.darkMode, tipIndex: state.tipIndex, recentRecipes: state.recentRecipes };
+  localStorage.setItem('mealpilot_v2', JSON.stringify(toSave));
+}
+
+function loadState() {
+  const raw = localStorage.getItem('mealpilot_v2') || localStorage.getItem('mealpilot');
+  if (!raw) return;
+  try {
+    const saved = JSON.parse(raw);
+    state.plan = saved.plan || {};
+    state.favourites = new Set(saved.favourites || []);
+    state.expenses = saved.expenses || [];
+    state.monthlyBudgetGoal = saved.monthlyBudgetGoal || 0;
+    state.darkMode = saved.darkMode || false;
+    state.tipIndex = saved.tipIndex || 0;
+    state.recentRecipes = saved.recentRecipes || [];
+  } catch(e) {}
+}
+
+// ─────────────────────────────────────────────
+//  HELPERS
+// ─────────────────────────────────────────────
+function fmt(n) { return '₦' + Number(n).toLocaleString('en-NG'); }
+
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type;
+  t.classList.remove('hidden');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(() => t.classList.add('hidden'), 2800);
+}
+
+function openModal(html) {
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modalOverlay').classList.remove('hidden');
+}
+function closeModal() { document.getElementById('modalOverlay').classList.add('hidden'); }
+
+function openShoppingModal(html) {
+  document.getElementById('shoppingBody').innerHTML = html;
+  document.getElementById('shoppingOverlay').classList.remove('hidden');
+}
+function closeShoppingModal() { document.getElementById('shoppingOverlay').classList.add('hidden'); }
+
+function getMealById(id) { return MEALS.find(m => m.id === id); }
+function normalizeIngredient(s) { return s.trim().toLowerCase(); }
+
+function categorizeIngredient(ing) {
+  const n = normalizeIngredient(ing);
+  for (const [cat, list] of Object.entries(INGREDIENT_CATS)) {
+    if (list.some(i => n.includes(i) || i.includes(n))) return cat;
+  }
+  return 'Others';
+}
+
+function capitalize(s) { if (!s) return ''; return s.charAt(0).toUpperCase() + s.slice(1); }
+
+function imgCard(img, alt) {
+  return `<div class="meal-img-wrap"><img src="${img}" alt="${alt}" class="meal-img" loading="lazy" onerror="this.style.display='none'"/></div>`;
+}
+
+// ─────────────────────────────────────────────
+//  PLANNER
+// ─────────────────────────────────────────────
+function initPlan() {
+  DAYS.forEach(day => { if (!state.plan[day]) state.plan[day] = { breakfast: null, lunch: null, dinner: null }; });
+}
+
+function renderPlanner() {
+  const grid = document.getElementById('plannerGrid');
+  const todayName = new Date().toLocaleDateString('en-NG', { weekday: 'long' });
+
+  grid.innerHTML = DAYS.map(day => {
+    const dayPlan = state.plan[day] || {};
+    const isToday = day === todayName;
+
+    const rows = MEAL_TIMES.map(time => {
+      const mealId = dayPlan[time];
+      const meal = mealId ? getAnyMealById(mealId) : null;
+      const filled = !!meal;
+      return `
+        <div class="planner-meal-row">
+          <span class="meal-time-label ${time}">${time}</span>
+          <div class="meal-slot ${filled ? 'filled' : ''}" data-day="${day}" data-time="${time}">
+            ${filled
+              ? `<span>${meal.emoji} ${meal.name}</span><button class="meal-slot-clear" data-day="${day}" data-time="${time}">✕</button>`
+              : `<span style="color:var(--text-muted);font-size:0.82rem">+ Add meal</span>`}
+          </div>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="planner-day" ${isToday ? 'style="border-color:var(--orange);box-shadow:0 0 0 2px rgba(245,158,11,0.25)"' : ''}>
+        <div class="planner-day-header" ${isToday ? 'style="background:var(--orange-dark)"' : ''}>
+          <span class="planner-day-name">${day} ${isToday ? '📍' : ''}</span>
+          <span class="planner-day-date">${isToday ? 'Today' : ''}</span>
+        </div>
+        <div class="planner-meals">${rows}</div>
+      </div>`;
+  }).join('');
+
+  grid.querySelectorAll('.meal-slot').forEach(slot => {
+    slot.addEventListener('click', (e) => {
+      if (e.target.classList.contains('meal-slot-clear')) return;
+      openMealPicker(slot.dataset.day, slot.dataset.time);
+    });
+  });
+
+  grid.querySelectorAll('.meal-slot-clear').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      state.plan[btn.dataset.day][btn.dataset.time] = null;
+      saveState(); renderPlanner();
+    });
+  });
+}
+
+function openMealPicker(day, time) {
+  const html = `
+    <div class="modal-meal-header">
+      <div class="modal-meal-name" style="font-size:1.1rem">Choose meal for ${day} ${capitalize(time)}</div>
+    </div>
+    <div class="search-bar">
+      <input type="text" id="mealPickerSearch" placeholder="Search meals…" style="margin:0"/>
+      <span class="search-icon">🔍</span>
+    </div>
+    <div class="custom-meal-input">
+      <label>Or type a custom meal name:</label>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="customMealName" placeholder="e.g. Semolina and Okazi"/>
+        <button class="btn btn-sm btn-primary" id="addCustomMealBtn">Add</button>
+      </div>
+    </div>
+    <div class="meal-picker-grid" id="mealPickerGrid">${renderPickerGrid(MEALS)}</div>`;
+
+  openModal(html);
+
+  document.getElementById('mealPickerSearch').addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase();
+    const filtered = q ? MEALS.filter(m => m.name.toLowerCase().includes(q)) : MEALS;
+    document.getElementById('mealPickerGrid').innerHTML = renderPickerGrid(filtered);
+    bindPickerItems(day, time);
+  });
+
+  document.getElementById('addCustomMealBtn').addEventListener('click', () => {
+    const name = document.getElementById('customMealName').value.trim();
+    if (!name) return;
+    const customId = 'custom_' + Date.now();
+    state.plan[day][time] = customId;
+    const customs = JSON.parse(localStorage.getItem('mp_customs') || '{}');
+    customs[customId] = { id: customId, name, emoji: '🍽️', category: 'Custom', cost: 0, img: IMAGES.default, ingredients: [] };
+    localStorage.setItem('mp_customs', JSON.stringify(customs));
+    saveState(); closeModal(); renderPlanner();
+    showToast(`${name} added to ${day} ${capitalize(time)}`, 'success');
+  });
+
+  bindPickerItems(day, time);
+}
+
+function renderPickerGrid(meals) {
+  return meals.map(m => `
+    <div class="meal-picker-item" data-id="${m.id}">
+      ${m.img ? `<img src="${m.img}" alt="${m.name}" class="picker-img" loading="lazy" onerror="this.style.display='none'"/>` : `<div class="meal-picker-emoji">${m.emoji}</div>`}
+      <div class="meal-picker-name">${m.name}</div>
+      <div class="meal-picker-cost">${fmt(m.cost)}${m.servings > 1 ? `/${m.servings} servings` : ''}</div>
+    </div>`).join('');
+}
+
+function bindPickerItems(day, time) {
+  document.querySelectorAll('.meal-picker-item').forEach(item => {
+    item.addEventListener('click', () => {
+      state.plan[day][time] = Number(item.dataset.id);
+      saveState(); closeModal(); renderPlanner();
+      showToast('Meal added! ✓', 'success');
+    });
+  });
+}
+
+function getAnyMealById(id) {
+  if (typeof id === 'string' && id.startsWith('custom_')) {
+    const customs = JSON.parse(localStorage.getItem('mp_customs') || '{}');
+    return customs[id];
+  }
+  return getMealById(id);
+}
+
+// ─────────────────────────────────────────────
+//  SHOPPING LIST
+// ─────────────────────────────────────────────
+function generateShoppingList() {
+  const allIngredients = [];
+  DAYS.forEach(day => {
+    MEAL_TIMES.forEach(time => {
+      const mealId = (state.plan[day] || {})[time];
+      if (!mealId) return;
+      const meal = getAnyMealById(mealId);
+      if (meal && meal.ingredients) {
+        meal.ingredients.forEach(ing => {
+          const clean = ing.replace(/\(.*?\)/g, '').trim();
+          allIngredients.push(normalizeIngredient(clean));
+        });
+      }
+    });
+  });
+
+  if (!allIngredients.length) { showToast('Plan some meals first!'); return; }
+
+  const counts = {};
+  allIngredients.forEach(ing => { counts[ing] = (counts[ing] || 0) + 1; });
+
+  const grouped = {};
+  Object.keys(INGREDIENT_CATS).forEach(cat => grouped[cat] = []);
+  Object.entries(counts).forEach(([ing, count]) => {
+    const cat = categorizeIngredient(ing);
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push({ ing, count });
+  });
+
+  let listsHTML = '';
+  let listText = '🛒 SHOPPING LIST — MealPilot\nGenerated: ' + new Date().toLocaleDateString('en-NG') + '\n\n';
+
+  Object.entries(grouped).forEach(([cat, items]) => {
+    if (!items.length) return;
+    listsHTML += `<div class="shopping-group"><h4>${cat}</h4>`;
+    listText += `── ${cat} ──\n`;
+    items.forEach(({ ing, count }) => {
+      const label = count > 1 ? `${capitalize(ing)} ×${count}` : capitalize(ing);
+      const safeKey = ing.replace(/[^a-z0-9]/g, '_');
+      listsHTML += `
+        <div class="shopping-item" id="si_${safeKey}">
+          <input type="checkbox" id="chk_${safeKey}" onchange="toggleShoppingItem(this)"/>
+          <label for="chk_${safeKey}">${label}</label>
+        </div>`;
+      listText += `☐ ${label}\n`;
+    });
+    listsHTML += `</div>`;
+    listText += '\n';
+  });
+
+  const totalMeals = Object.values(state.plan).flatMap(d => Object.values(d)).filter(Boolean).length;
+
+  const html = `
+    <div class="shopping-header">
+      <h3>🛒 Shopping List</h3>
+      <div class="shopping-actions">
+        <button class="btn btn-sm btn-outline" onclick="printShoppingList()">🖨️</button>
+        <button class="btn btn-sm btn-primary" onclick="copyShoppingList('${encodeURIComponent(listText)}')">📋 Copy</button>
+        <button class="btn btn-sm btn-orange" onclick="downloadShoppingList('${encodeURIComponent(listText)}')">⬇️</button>
+      </div>
+    </div>
+    <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:16px">${totalMeals} meals planned · ${Object.values(counts).length} unique ingredients</p>
+    ${listsHTML}`;
+
+  openShoppingModal(html);
+}
+
+function toggleShoppingItem(checkbox) { checkbox.closest('.shopping-item').classList.toggle('checked', checkbox.checked); }
+function printShoppingList() { window.print(); }
+function copyShoppingList(encoded) { navigator.clipboard.writeText(decodeURIComponent(encoded)).then(() => showToast('Copied!', 'success')); }
+function downloadShoppingList(encoded) {
+  const blob = new Blob([decodeURIComponent(encoded)], { type: 'text/plain' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `mealpilot-shopping-list-${new Date().toISOString().slice(0,10)}.txt`; a.click();
+  showToast('Downloaded!', 'success');
+}
+
+// ─────────────────────────────────────────────
+//  MEAL CARDS (Explore)
+// ─────────────────────────────────────────────
+function renderMealCards(meals) {
+  const grid = document.getElementById('mealCardsGrid');
+  if (!meals.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🔍</div><p>No meals found.</p></div>`;
+    return;
+  }
+  grid.innerHTML = meals.map(m => `
+    <div class="meal-card" data-id="${m.id}">
+      <button class="meal-fav-btn ${state.favourites.has(m.id) ? 'active' : ''}" data-id="${m.id}">⭐</button>
+      ${m.img ? `<div class="meal-img-wrap"><img src="${m.img}" alt="${m.name}" class="meal-img" loading="lazy" onerror="this.parentElement.innerHTML='<span style=font-size:2.5rem>${m.emoji}</span>'"/></div>` : `<span class="meal-emoji">${m.emoji}</span>`}
+      <div class="meal-name">${m.name}</div>
+      <div class="meal-category">${m.category}</div>
+      <div class="meal-cost">${fmt(m.cost)}${m.servings > 1 ? ` · ${m.servings} svgs` : ''}</div>
+    </div>`).join('');
+
+  grid.querySelectorAll('.meal-card').forEach(card => {
+    card.addEventListener('click', (e) => { if (e.target.classList.contains('meal-fav-btn')) return; openMealDetail(Number(card.dataset.id)); });
+  });
+  grid.querySelectorAll('.meal-fav-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => { e.stopPropagation(); toggleFav(Number(btn.dataset.id)); btn.classList.toggle('active'); });
+  });
+}
+
+function filterMealCards() {
+  const q = document.getElementById('mealSearchInput').value.toLowerCase();
+  const cat = document.querySelector('#mealCategoryFilter .chip.active')?.dataset.cat || 'all';
+  let meals = MEALS;
+  if (cat !== 'all') meals = meals.filter(m => m.category === cat);
+  if (q) meals = meals.filter(m => m.name.toLowerCase().includes(q));
+  renderMealCards(meals);
+}
+
+// ─────────────────────────────────────────────
+//  MEAL DETAIL MODAL
+// ─────────────────────────────────────────────
+function openMealDetail(id) {
+  const meal = getMealById(id);
+  if (!meal) return;
+  const recipe = RECIPES.find(r => r.mealId === id);
+  const isFav = state.favourites.has(id);
+
+  const crRef = meal.note ? `<div style="background:rgba(14,122,61,0.08);border-radius:8px;padding:10px 12px;font-size:0.8rem;color:var(--green);margin-bottom:14px;border-left:3px solid var(--green)">💡 ${meal.note}</div>` : '';
+
+  const stepsHTML = recipe ? `<div class="modal-section"><h4>Method (${recipe.cookTime} min)</h4><ol class="modal-step-list">${recipe.steps.map(s=>`<li>${s}</li>`).join('')}</ol></div>` : '';
+
+  const html = `
+    ${meal.img ? `<img src="${meal.img}" alt="${meal.name}" style="width:100%;height:200px;object-fit:cover;border-radius:12px;margin-bottom:16px" loading="lazy" onerror="this.style.display='none'"/>` : ''}
+    <div class="modal-meal-header">
+      <div class="modal-meal-emoji">${meal.emoji}</div>
+      <div class="modal-meal-name">${meal.name}</div>
+      <div class="modal-tags">
+        <span class="modal-tag tag-green">${meal.category}</span>
+        <span class="modal-tag tag-orange">${fmt(meal.cost)}${meal.servings > 1 ? ` / ${meal.servings} servings` : ''}</span>
+        ${meal.servings > 1 ? `<span class="modal-tag tag-purple">${fmt(Math.round(meal.cost/meal.servings))} per person</span>` : ''}
+      </div>
+    </div>
+    ${crRef}
+    <div class="modal-section">
+      <h4>Ingredients</h4>
+      <ul class="modal-ingredient-list">${meal.ingredients.map(i=>`<li>${capitalize(i)}</li>`).join('')}</ul>
+    </div>
+    ${stepsHTML}
+    <div class="modal-section">
+      <h4>Add to Meal Plan</h4>
+      <select class="meal-add-to-day-select" id="addToDaySelect">
+        ${DAYS.map(d=>MEAL_TIMES.map(t=>`<option value="${d}|${t}">${d} — ${capitalize(t)}</option>`).join('')).join('')}
+      </select>
+      <button class="btn btn-primary btn-sm" id="addToPlanConfirmBtn">Add to Plan</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-sm ${isFav ? 'btn-orange' : 'btn-outline'}" id="favToggleBtn">${isFav ? '⭐ Saved' : '☆ Save'}</button>
+    </div>`;
+
+  openModal(html);
+
+  document.getElementById('addToPlanConfirmBtn').addEventListener('click', () => {
+    const [day, time] = document.getElementById('addToDaySelect').value.split('|');
+    state.plan[day][time] = id; saveState(); closeModal(); renderPlanner();
+    showToast(`Added to ${day} ${capitalize(time)}!`, 'success');
+  });
+
+  document.getElementById('favToggleBtn').addEventListener('click', () => {
+    toggleFav(id);
+    const now = state.favourites.has(id);
+    document.getElementById('favToggleBtn').textContent = now ? '⭐ Saved' : '☆ Save';
+    document.getElementById('favToggleBtn').className = `btn btn-sm ${now ? 'btn-orange' : 'btn-outline'}`;
+  });
+
+  state.recentRecipes = [id, ...state.recentRecipes.filter(x=>x!==id)].slice(0,5);
+  saveState();
+}
+
+// ─────────────────────────────────────────────
+//  RECIPES SECTION
+// ─────────────────────────────────────────────
+function renderRecipeCards(recipes) {
+  const grid = document.getElementById('recipeCardsGrid');
+  if (!recipes.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📖</div><p>No recipes found.</p></div>`;
+    return;
+  }
+  grid.innerHTML = recipes.map(r => `
+    <div class="recipe-card" data-id="${r.mealId}">
+      ${r.img ? `<div class="meal-img-wrap"><img src="${r.img}" alt="${r.name}" class="meal-img" loading="lazy" onerror="this.parentElement.innerHTML='<span style=font-size:1.8rem>${r.emoji}</span>'"/></div>` : `<span class="recipe-emoji">${r.emoji}</span>`}
+      <div class="recipe-name">${r.name}</div>
+      <div class="recipe-meta">
+        <span class="recipe-tag green">${r.category}</span>
+        <span class="recipe-tag orange">⏱ ${r.cookTime}min</span>
+        <span class="recipe-tag">${fmt(r.cost)}</span>
+        <span class="recipe-tag">👥 ${r.servings}</span>
+      </div>
+    </div>`).join('');
+
+  grid.querySelectorAll('.recipe-card').forEach(card => {
+    card.addEventListener('click', () => openMealDetail(Number(card.dataset.id)));
+  });
+}
+
+function filterRecipeCards() {
+  const q = document.getElementById('recipeSearchInput').value.toLowerCase();
+  const cat = document.querySelector('#recipeCategoryFilter .chip.active')?.dataset.cat || 'all';
+  let recipes = RECIPES;
+  if (cat !== 'all') recipes = recipes.filter(r => r.category === cat);
+  if (q) recipes = recipes.filter(r => r.name.toLowerCase().includes(q));
+  renderRecipeCards(recipes);
+}
+
+// ─────────────────────────────────────────────
+//  BUDGET: WHAT CAN I COOK?
+// ─────────────────────────────────────────────
+function runBudgetSuggest() {
+  const budget = Number(document.getElementById('budgetInput').value);
+  if (!budget || budget < 100) { showToast('Please enter a valid amount (min ₦100)'); return; }
+
+  const affordable = MEALS.filter(m => m.cost <= budget * 1.2).sort((a,b) => Math.abs(budget-a.cost) - Math.abs(budget-b.cost));
+
+  if (!affordable.length) {
+    document.getElementById('budgetResults').innerHTML = `<p style="color:rgba(255,255,255,0.8);text-align:center;padding:16px">Hmm, ₦${budget.toLocaleString()} is very tight. Try ₦500 or more.</p>`;
+    document.getElementById('budgetResults').classList.remove('hidden');
+    return;
+  }
+
+  const shown = affordable.slice(0, 6);
+  const html = `
+    <p style="color:rgba(255,255,255,0.9);font-size:0.82rem;margin-bottom:12px">🎉 ${affordable.length} meals within your ${fmt(budget)} budget:</p>
+    ${shown.map(m => `
+      <div class="budget-meal-item">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          ${m.img ? `<img src="${m.img}" alt="${m.name}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0" loading="lazy" onerror="this.style.display='none'"/>` : `<span style="font-size:1.8rem">${m.emoji}</span>`}
+          <div>
+            <div class="meal-n">${m.name}</div>
+            <div class="meal-c">${fmt(m.cost)} · ${m.servings > 1 ? `${m.servings} servings · ${fmt(Math.round(m.cost/m.servings))}/person` : '1 serving'}</div>
+          </div>
+        </div>
+        <div class="meal-d">${m.ingredients.slice(0,4).map(i=>i.replace(/\(.*?\)/g,'')).join(', ')}…</div>
+      </div>`).join('')}
+    ${affordable.length > 6 ? `<p style="color:rgba(255,255,255,0.7);font-size:0.78rem;text-align:center;margin-top:8px">+${affordable.length-6} more meals fit your budget</p>` : ''}`;
+
+  document.getElementById('budgetResults').innerHTML = html;
+  document.getElementById('budgetResults').classList.remove('hidden');
+}
+
+// ─────────────────────────────────────────────
+//  BUDGET ESTIMATOR
+// ─────────────────────────────────────────────
+function runBudgetEstimate() {
+  const adults = Number(document.getElementById('numAdults').value) || 1;
+  const children = Number(document.getElementById('numChildren').value) || 0;
+  const days = Number(document.getElementById('numDays').value) || 7;
+
+  // 2025 Lagos/Abuja estimates (home cooking)
+  const DAILY_PER_ADULT = { economy: 1500, standard: 2500, premium: 4500 };
+  const DAILY_PER_CHILD = { economy: 900, standard: 1500, premium: 2500 };
+
+  const tiers = ['economy', 'standard', 'premium'];
+  const labels = { economy: '💚 Budget-Friendly (Market cooking)', standard: '🟡 Standard (Mix of home + occasional CR)', premium: '💜 Premium (Quality ingredients + dining out)' };
+
+  const results = tiers.map(tier => {
+    const daily = (adults * DAILY_PER_ADULT[tier]) + (children * DAILY_PER_CHILD[tier]);
+    const total = daily * days;
+    const weekly = daily * 7;
+    return { tier, label: labels[tier], daily, total, weekly };
+  });
+
+  const crRef = `<div style="background:rgba(14,122,61,0.08);border-radius:8px;padding:10px;font-size:0.78rem;color:var(--green);margin-top:12px;border-left:3px solid var(--green)">
+    🍗 <strong>Chicken Republic reference:</strong> Refuel Meal ₦900 · Citizens Meal (2pc) ₦2,000 · Pot Lovers (family) ₦9,000
+  </div>`;
+
+  const html = `
+    <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:12px">For ${adults} adult${adults>1?'s':''} + ${children} child${children!==1?'ren':''}, ${days} days — 2025 prices:</p>
+    ${results.map(r => `
+      <div class="budget-tier ${r.tier}">
+        <div>
+          <div class="budget-tier-label">${r.label}</div>
+          <div style="font-size:0.75rem;color:var(--text-muted)">Daily: ${fmt(r.daily)} · Weekly: ${fmt(r.weekly)}</div>
+        </div>
+        <div class="budget-tier-amount">${fmt(r.total)}</div>
+      </div>`).join('')}
+    ${crRef}
+    <p style="font-size:0.72rem;color:var(--text-muted);margin-top:10px">* Based on Lagos/Abuja 2025 market prices. Source: SBM Intelligence, Nigerian market data.</p>`;
+
+  document.getElementById('budgetEstimateResults').innerHTML = html;
+  document.getElementById('budgetEstimateResults').classList.remove('hidden');
+}
+
+// ─────────────────────────────────────────────
+//  INGREDIENT MATCHING
+// ─────────────────────────────────────────────
+function runIngredientMatch() {
+  const raw = document.getElementById('ingredientInput').value;
+  if (!raw.trim()) { showToast('Enter some ingredients first'); return; }
+
+  const userIngs = raw.split(',').map(s => normalizeIngredient(s)).filter(Boolean);
+
+  const scored = MEALS.map(meal => {
+    const mealIngs = meal.ingredients.map(i => normalizeIngredient(i.replace(/\(.*?\)/g,'')));
+    const matches = mealIngs.filter(mi => userIngs.some(ui => mi.includes(ui) || ui.includes(mi)));
+    const pct = Math.round((matches.length / mealIngs.length) * 100);
+    const missing = mealIngs.filter(mi => !userIngs.some(ui => mi.includes(ui) || ui.includes(mi)));
+    return { meal, pct, matches, missing };
+  }).filter(s => s.pct > 0).sort((a,b) => b.pct-a.pct).slice(0,8);
+
+  if (!scored.length) {
+    document.getElementById('ingredientResults').innerHTML = `<p style="color:var(--text-muted);text-align:center;padding:20px">No matching meals found. Try more ingredients!</p>`;
+    document.getElementById('ingredientResults').classList.remove('hidden');
+    return;
+  }
+
+  const html = scored.map(s => {
+    const pctClass = s.pct >= 70 ? 'high' : s.pct >= 40 ? 'mid' : 'low';
+    return `
+      <div class="ingredient-match">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          ${s.meal.img ? `<img src="${s.meal.img}" alt="${s.meal.name}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0" loading="lazy" onerror="this.style.display='none'"/>` : `<span style="font-size:1.4rem">${s.meal.emoji}</span>`}
+          <div class="match-header" style="flex:1;display:flex;align-items:center;justify-content:space-between">
+            <span class="match-name">${s.meal.name}</span>
+            <span class="match-pct ${pctClass}">${s.pct}%</span>
+          </div>
+        </div>
+        <div class="match-detail">
+          <span>✓ You have: ${s.matches.slice(0,4).map(capitalize).join(', ')}${s.matches.length>4?'…':''}</span>
+          ${s.missing.length ? `<span style="color:var(--orange-dark)">✗ Still need: ${s.missing.slice(0,3).map(capitalize).join(', ')}${s.missing.length>3?` +${s.missing.length-3} more`:''}</span>` : '<span style="color:var(--green)">🎉 You have everything!</span>'}
+        </div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('ingredientResults').innerHTML = html;
+  document.getElementById('ingredientResults').classList.remove('hidden');
+}
+
+// ─────────────────────────────────────────────
+//  TRACKER
+// ─────────────────────────────────────────────
+function renderTracker() {
+  const now = new Date();
+  const thisWeekStart = new Date(now); thisWeekStart.setDate(now.getDate()-now.getDay());
+  const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const weekSpend = state.expenses.filter(e=>new Date(e.date)>=thisWeekStart).reduce((s,e)=>s+e.amount,0);
+  const monthSpend = state.expenses.filter(e=>new Date(e.date)>=thisMonthStart).reduce((s,e)=>s+e.amount,0);
+  const goal = state.monthlyBudgetGoal;
+  const remaining = goal ? Math.max(0, goal-monthSpend) : 0;
+  const pct = goal ? Math.min(100, Math.round((monthSpend/goal)*100)) : 0;
+  const pctClass = pct>=90?'danger':pct>=70?'warn':'';
+
+  document.getElementById('trackerSummary').innerHTML = `
+    <div class="tracker-stat"><span class="amount">${fmt(weekSpend)}</span><span class="label">This week</span></div>
+    <div class="tracker-stat"><span class="amount">${fmt(monthSpend)}</span><span class="label">This month</span></div>
+    ${goal ? `<div class="tracker-stat" style="grid-column:1/-1">
+      <div class="progress-wrap">
+        <div class="progress-label"><span>Monthly budget</span><span>${pct}% used · ${fmt(remaining)} left</span></div>
+        <div class="progress-bar"><div class="progress-fill ${pctClass}" style="width:${pct}%"></div></div>
+      </div>
+    </div>` : ''}`;
+
+  if (goal) document.getElementById('monthlyBudgetGoal').value = goal;
+  renderMiniChart();
+
+  const list = document.getElementById('expenseList');
+  const recent = [...state.expenses].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,20);
+  if (!recent.length) {
+    list.innerHTML = `<div class="empty-state" style="padding:20px"><div class="empty-icon">💸</div><p>No expenses yet. Add your first one!</p></div>`;
+    return;
+  }
+  list.innerHTML = recent.map(e => `
+    <div class="expense-item">
+      <div><div class="expense-desc">${e.desc}</div><div class="expense-cat">${e.category} · ${new Date(e.date).toLocaleDateString('en-NG')}</div></div>
+      <div style="display:flex;align-items:center"><span class="expense-amount">${fmt(e.amount)}</span><button class="expense-delete" data-id="${e.id}">🗑</button></div>
+    </div>`).join('');
+
+  list.querySelectorAll('.expense-delete').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.expenses = state.expenses.filter(e=>e.id!==Number(btn.dataset.id));
+      saveState(); renderTracker();
+    });
+  });
+}
+
+function renderMiniChart() {
+  const catTotals = {};
+  Object.keys(INGREDIENT_CATS).forEach(c => catTotals[c] = 0);
+  state.expenses.forEach(e => { catTotals[e.category] = (catTotals[e.category]||0) + e.amount; });
+  const maxVal = Math.max(...Object.values(catTotals), 1);
+  const container = document.getElementById('spendingChart').parentElement;
+  const existing = container.querySelector('.mini-chart');
+  if (existing) existing.remove();
+  const miniChart = document.createElement('div');
+  miniChart.className = 'mini-chart';
+  const entries = Object.entries(catTotals).filter(([,v])=>v>0);
+  miniChart.innerHTML = entries.length
+    ? entries.map(([cat,val])=>`<div class="mini-bar-row"><span class="mini-bar-label">${cat}</span><div class="mini-bar-track"><div class="mini-bar-fill" style="width:${Math.round((val/maxVal)*100)}%"></div></div><span class="mini-bar-val">${fmt(val)}</span></div>`).join('')
+    : `<p style="color:var(--text-muted);font-size:0.82rem;text-align:center;padding:10px">No spending data yet</p>`;
+  container.insertBefore(miniChart, document.getElementById('expenseList'));
+}
+
+function addExpense() {
+  const desc = document.getElementById('expenseDesc').value.trim();
+  const amount = Number(document.getElementById('expenseAmount').value);
+  const category = document.getElementById('expenseCategory').value;
+  const budgetGoal = Number(document.getElementById('monthlyBudgetGoal').value);
+  if (!desc || !amount || amount<=0) { showToast('Please fill in description and amount'); return; }
+  state.expenses.push({ id:Date.now(), desc, amount, category, date:new Date().toISOString() });
+  if (budgetGoal>0) state.monthlyBudgetGoal = budgetGoal;
+  document.getElementById('expenseDesc').value = '';
+  document.getElementById('expenseAmount').value = '';
+  saveState(); renderTracker();
+  showToast('Expense added!', 'success');
+}
+
+// ─────────────────────────────────────────────
+//  FOOD TIPS
+// ─────────────────────────────────────────────
+function renderTip() {
+  const tip = FOOD_TIPS[state.tipIndex % FOOD_TIPS.length];
+  document.getElementById('foodTipDisplay').innerHTML = `
+    <div class="tip-number">Tip ${(state.tipIndex % FOOD_TIPS.length)+1} of ${FOOD_TIPS.length}</div>
+    <div class="tip-text">${tip}</div>`;
+}
+
+// ─────────────────────────────────────────────
+//  FAVOURITES
+// ─────────────────────────────────────────────
+function toggleFav(id) {
+  if (state.favourites.has(id)) { state.favourites.delete(id); showToast('Removed from favourites'); }
+  else { state.favourites.add(id); showToast('Saved to favourites ⭐', 'success'); }
+  saveState();
+}
+
+function openFavourites() {
+  const favIds = [...state.favourites];
+  if (!favIds.length) {
+    openModal(`<div class="modal-meal-header"><div class="modal-meal-name">⭐ Favourites</div></div><div class="empty-state"><div class="empty-icon">⭐</div><p>No favourites yet! Tap the star on any meal to save it here.</p></div>`);
+    return;
+  }
+  const meals = favIds.map(id=>getMealById(id)).filter(Boolean);
+  const html = `
+    <div class="modal-meal-header"><div class="modal-meal-name">⭐ Favourites (${meals.length})</div></div>
+    <div class="fav-list">${meals.map(m=>`
+      <div class="fav-item" data-id="${m.id}">
+        ${m.img ? `<img src="${m.img}" alt="${m.name}" style="width:42px;height:42px;border-radius:8px;object-fit:cover;flex-shrink:0" loading="lazy" onerror="this.style.display='none'"/>` : `<span class="fav-emoji">${m.emoji}</span>`}
+        <div><div class="fav-name">${m.name}</div><div class="fav-cat">${m.category} · ${fmt(m.cost)}</div></div>
+      </div>`).join('')}
+    </div>`;
+  openModal(html);
+  document.querySelectorAll('.fav-item').forEach(item => {
+    item.addEventListener('click', () => { closeModal(); setTimeout(()=>openMealDetail(Number(item.dataset.id)),200); });
+  });
+}
+
+// ─────────────────────────────────────────────
+//  EXPORT PLAN
+// ─────────────────────────────────────────────
+function exportPlan() {
+  let text = '📅 MY WEEKLY MEAL PLAN — MealPilot\nGenerated: ' + new Date().toLocaleDateString('en-NG') + '\n\n';
+  let totalCost = 0;
+  DAYS.forEach(day => {
+    text += `── ${day.toUpperCase()} ──\n`;
+    const dayPlan = state.plan[day] || {};
+    MEAL_TIMES.forEach(time => {
+      const mealId = dayPlan[time];
+      const meal = mealId ? getAnyMealById(mealId) : null;
+      text += `  ${capitalize(time)}: ${meal ? `${meal.name} (${fmt(meal.cost)})` : 'Not planned'}\n`;
+      if (meal) totalCost += meal.cost;
+    });
+    text += '\n';
+  });
+  text += `──────────────────────\nEstimated Total: ${fmt(totalCost)}\n\nPlanned with MealPilot 🍛\nPrices based on Lagos/Abuja 2025 market rates.`;
+  const blob = new Blob([text], { type:'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `mealpilot-plan-${new Date().toISOString().slice(0,10)}.txt`;
+  a.click();
+  showToast('Plan exported!', 'success');
+}
+
+// ─────────────────────────────────────────────
+//  DARK MODE
+// ─────────────────────────────────────────────
+function toggleDarkMode() {
+  state.darkMode = !state.darkMode;
+  document.body.classList.toggle('dark-mode', state.darkMode);
+  document.getElementById('darkModeToggle').innerHTML = state.darkMode ? '<span>☀️</span>' : '<span class="icon-moon">🌙</span>';
+  saveState();
+}
+
+// ─────────────────────────────────────────────
+//  NAVIGATION
+// ─────────────────────────────────────────────
+function navigate(sectionId) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const section = document.getElementById('sec-'+sectionId);
+  const navBtn = document.querySelector(`.nav-item[data-section="${sectionId}"]`);
+  if (section) section.classList.add('active');
+  if (navBtn) navBtn.classList.add('active');
+  if (sectionId==='planner') renderPlanner();
+  if (sectionId==='explore') filterMealCards();
+  if (sectionId==='recipes') filterRecipeCards();
+  if (sectionId==='tracker') renderTracker();
+  window.scrollTo(0,0);
+}
+
+// ─────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────
+function init() {
+  loadState();
+  initPlan();
+
+  setTimeout(() => {
+    document.getElementById('splash').classList.add('fade-out');
+    document.getElementById('app').classList.remove('hidden');
+    renderPlanner();
+    renderMealCards(MEALS);
+    renderRecipeCards(RECIPES);
+    renderTracker();
+    renderTip();
+  }, 1600);
+
+  if (state.darkMode) {
+    document.body.classList.add('dark-mode');
+    document.getElementById('darkModeToggle').innerHTML = '<span>☀️</span>';
+  }
+
+  document.querySelectorAll('.nav-item').forEach(btn => btn.addEventListener('click', ()=>navigate(btn.dataset.section)));
+  document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+  document.getElementById('favBtn').addEventListener('click', openFavourites);
+  document.getElementById('generateShoppingList').addEventListener('click', generateShoppingList);
+  document.getElementById('exportPlanBtn').addEventListener('click', exportPlan);
+  document.getElementById('clearPlanBtn').addEventListener('click', () => {
+    if (!confirm('Clear the entire week\'s meal plan?')) return;
+    DAYS.forEach(d => { state.plan[d] = { breakfast:null, lunch:null, dinner:null }; });
+    saveState(); renderPlanner(); showToast('Plan cleared');
+  });
+
+  document.getElementById('mealSearchInput').addEventListener('input', filterMealCards);
+  document.querySelectorAll('#mealCategoryFilter .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('#mealCategoryFilter .chip').forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active'); filterMealCards();
+    });
+  });
+
+  document.getElementById('recipeSearchInput').addEventListener('input', filterRecipeCards);
+  document.querySelectorAll('#recipeCategoryFilter .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('#recipeCategoryFilter .chip').forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active'); filterRecipeCards();
+    });
+  });
+
+  document.getElementById('budgetSuggestBtn').addEventListener('click', runBudgetSuggest);
+  document.getElementById('budgetInput').addEventListener('keydown', e=>{ if(e.key==='Enter') runBudgetSuggest(); });
+  document.getElementById('estimateBudgetBtn').addEventListener('click', runBudgetEstimate);
+  document.getElementById('ingredientMatchBtn').addEventListener('click', runIngredientMatch);
+  document.getElementById('addExpenseBtn').addEventListener('click', addExpense);
+  document.getElementById('nextTipBtn').addEventListener('click', () => { state.tipIndex++; saveState(); renderTip(); });
+
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  document.getElementById('shoppingClose').addEventListener('click', closeShoppingModal);
+  document.getElementById('modalOverlay').addEventListener('click', e=>{ if(e.target===document.getElementById('modalOverlay')) closeModal(); });
+  document.getElementById('shoppingOverlay').addEventListener('click', e=>{ if(e.target===document.getElementById('shoppingOverlay')) closeShoppingModal(); });
+}
+
+window.toggleShoppingItem = toggleShoppingItem;
+window.printShoppingList = printShoppingList;
+window.copyShoppingList = copyShoppingList;
+window.downloadShoppingList = downloadShoppingList;
+
+document.addEventListener('DOMContentLoaded', init);
