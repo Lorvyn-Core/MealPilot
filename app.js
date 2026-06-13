@@ -26,128 +26,57 @@
 // ─────────────────────────────────────────────
 
 // ─────────────────────────────────────────────
-//  LOCAL FOOD IMAGES
-//  1. Create a folder called "images/" next to index.html
-//  2. Download a photo for each dish and rename it exactly
-//     as the filename shown below (e.g. jollof_rice.jpg)
-//  3. Supported formats: .jpg  .jpeg  .png  .webp
-//
-//  DOWNLOAD TIPS — search these terms on Google Images,
-//  Pinterest, or Instagram for the best Nigerian food photos:
-//
-//  jollof_rice.jpg         → "Nigerian Jollof Rice"
-//  fried_rice.jpg          → "Nigerian Fried Rice party"
-//  coconut_rice.jpg        → "Nigerian Coconut Rice"
-//  white_rice_stew.jpg     → "White Rice Tomato Stew Nigerian"
-//  rice_and_beans.jpg      → "Nigerian Rice and Beans"
-//  ofada_rice.jpg          → "Ofada Rice Ayamase stew"
-//  banga_rice.jpg          → "Banga Rice Delta"
-//  spaghetti_jollof.jpg    → "Nigerian Jollof Spaghetti"
-//  egusi_soup.jpg          → "Egusi Soup Nigerian"
-//  okra_soup.jpg           → "Nigerian Okra Soup draw"
-//  banga_soup.jpg          → "Banga Soup Delta"
-//  oha_soup.jpg            → "Oha Soup Igbo"
-//  efo_riro.jpg            → "Efo Riro Yoruba soup"
-//  afang_soup.jpg          → "Afang Soup Cross River"
-//  goat_pepper_soup.jpg    → "Nigerian Goat Pepper Soup"
-//  catfish_pepper_soup.jpg → "Catfish Pepper Soup Nigerian"
-//  bitterleaf_soup.jpg     → "Bitter Leaf Soup Nigerian"
-//  ogbono_soup.jpg         → "Ogbono Soup draw"
-//  edikang_ikong.jpg       → "Edikang Ikong soup"
-//  miyan_kuka.jpg          → "Miyan Kuka Northern Nigeria"
-//  eba.jpg                 → "Eba and soup Nigerian"
-//  pounded_yam.jpg         → "Pounded Yam Nigerian"
-//  fufu.jpg                → "Cassava Fufu Nigerian"
-//  semovita.jpg            → "Semovita swallow Nigerian"
-//  amala.jpg               → "Amala Ewedu Yoruba"
-//  tuwo_shinkafa.jpg       → "Tuwo Shinkafa Northern Nigeria"
-//  poundo_yam.jpg          → "Poundo Yam flour swallow"
-//  yam_egg_sauce.jpg       → "Boiled Yam Egg Sauce Nigerian"
-//  akara.jpg               → "Akara bean cakes Nigerian"
-//  pap_akara.jpg           → "Pap and Akara Nigerian breakfast"
-//  moi_moi.jpg             → "Moi Moi Nigerian"
-//  pap_moi_moi.jpg         → "Pap and Moi Moi Nigerian breakfast"
-//  custard.jpg             → "Nigerian Custard breakfast"
-//  noodles_egg.jpg         → "Indomie Noodles Egg Nigerian"
-//  bread_egg.jpg           → "Bread Egg Sauce Nigerian"
-//  toast_bread.jpg         → "Toast Bread Nigerian breakfast"
-//  fried_plantain.jpg      → "Dodo Fried Plantain Nigerian"
-//  boiled_plantain.jpg     → "Boiled Plantain Nigerian"
-//  yam_pottage.jpg         → "Yam Pottage Asaro Nigerian"
-//  beans_porridge.jpg      → "Beans Porridge Plantain Nigerian"
-//  oatmeal.jpg             → "Oatmeal Porridge Nigerian"
-//  fried_yam.jpg           → "Fried Yam Pepper Sauce Nigerian"
-//  fried_potatoes.jpg      → "Fried Potatoes Nigerian"
-//  puff_puff.jpg           → "Nigerian Puff Puff"
-//  chin_chin.jpg           → "Nigerian Chin Chin"
-//  small_chops.jpg         → "Nigerian Small Chops party"
-//  boli.jpg                → "Boli Groundnut Lagos street food"
-//  suya.jpg                → "Nigerian Suya beef skewer"
-//  roasted_corn.jpg        → "Roasted Corn Nigeria"
-//  kilishi.jpg             → "Kilishi Nigerian dried meat"
-//  plantain_chips.jpg      → "Nigerian Plantain Chips"
-//  shawarma.jpg            → "Nigerian Shawarma wrap"
-//  nkwobi.jpg              → "Nkwobi Nigerian"
-//  isi_ewu.jpg             → "Isi Ewu goat head Nigerian"
-//  abacha.jpg              → "Abacha African Salad Nigerian"
-//  ugba.jpg                → "Ugba Garden Egg Nigerian"
-//  ukwa.jpg                → "Ukwa Breadfruit Igbo"
-//  dan_wake.jpg            → "Dan Wake Northern Nigeria"
-//  fried_chicken.jpg       → "Nigerian Fried Chicken"
-//  fried_turkey.jpg        → "Nigerian Fried Turkey"
-//  beef.jpg                → "Nigerian Beef stew"
-//  fish_stew.jpg           → "Nigerian Fish Stew"
-//  garri.jpg               → "Nigerian Garri drinking soaking"
-//  semo.jpg                → "Semolina swallow Nigerian"
-//  cr_refuel.jpg           → "Chicken Republic Refuel Meal"
-//  cr_citizens.jpg         → "Chicken Republic Citizens Meal"
-// ─────────────────────────────────────────────
 //  IMAGE MAP — exact filenames as downloaded
 //  All files go inside an  images/  folder
 //  next to index.html
 // ─────────────────────────────────────────────
 const IMAGES = {
-  jollof_rice:        'images/Jollof_Rice.jpg',
-  fried_rice:         'images/fried_rice.jpg',
-  coconut_rice:       'images/Coconut_rice.jpg',
-  white_rice_stew:    'images/White_Rice_Stew.jpg',
-  rice_beans:         'images/Rice_beans.jpg',
-  jollof_spaghetti:   'images/Jollof_Spaghetti.jpg',
-  egusi:              'images/Egusi.jpg',
-  okro_soup:          'images/Okro_soup.jpg',
-  vegetable_soup:     'images/Vegetable_soup.jpg',
-  peppersoup:         'images/Goat_Meat_Peppersoup.jpg',
-  catfish_peppersoup: 'images/Catfish_peppersoup.jpg',
-  goatmeat_peppersoup:'images/goat_meat_peppersoup.jpg',
-  ogbono_soup:        'images/Ogbono_soup.jpg',
-  eba:                'images/Eba.jpg',
-  pounded_yam:        'images/pounded_yam.jpg',
-  fufu:               'images/Fufu.jpg',
-  semo:               'images/Semo.jpg',
-  yam_egg:            'images/yam_egg.jpg',
-  akara_pap:          'images/Akara_pap.jpg',
-  pap_moi_moi:        'images/pap_moi_moi.jpg',
-  custard_moi_moi:    'images/Custard_moi_moi.jpg',
-  custard_akara:      'images/Custard_akara.jpg',
-  noodles:            'images/Noodles.jpg',
-agege_bread_egg_sauce:'images/Agege_bread_egg_sauce.jpg',
-agege_bread_ewa_agoyin:'images/agege_bread_ewa_agoyin.jpg',
-  fried_plantain:     'images/Fried_plantain.jpg',
-  boiled_plantain:    'images/Boiled_plantain.jpg',
-  beans_porridge:     'images/Beans_porridge.jpg',
-  fried_yam:          'images/Fried_yam.jpg',
-  fried_potato:       'images/Fried_potato.jpg',
-  puff_puff:          'images/puff_puff.jpg',
-  small_chops:        'images/Small_chops.jpg',
-  suya:               'images/Suya.jpg',
-  yam_pottage:       'images/yam_pottage.jpg',
-   fried_yam_pepper_sauce:'images/fried_yam_peppersauce.jpg',  
-  garri:              'images/Garri.jpg',
-  fried_chicken:      'images/Fried_chicken.jpg',
-  fried_beef:         'images/Fried_beef.jpg',
-  fried_turkey:       'images/Fried_turkey.jpg',
-  buka_stew:          'images/Stew.jpg',
-  pancake:            'images/Pancake.jpg',
+  jollof_rice:              'images/Jollof_Rice.jpg',
+  fried_rice:               'images/fried_rice.jpg',
+  coconut_rice:             'images/Coconut_rice.jpg',
+  white_rice_stew:          'images/White_Rice_Stew.jpg',
+  rice_beans:               'images/Rice_beans.jpg',
+  jollof_spaghetti:         'images/Jollof_Spaghetti.jpg',
+  egusi:                    'images/Egusi.jpg',
+  okro_soup:                'images/Okro_soup.jpg',
+  vegetable_soup:           'images/Vegetable_soup.jpg',
+  peppersoup:               'images/Goat_Meat_Peppersoup.jpg',
+  catfish_peppersoup:       'images/Catfish_peppersoup.jpg',
+  goatmeat_peppersoup:      'images/goat_meat_peppersoup.jpg',
+  ogbono_soup:              'images/Ogbono_soup.jpg',
+  eba:                      'images/Eba.jpg',
+  pounded_yam:              'images/pounded_yam.jpg',
+  fufu:                     'images/Fufu.jpg',
+  semo:                     'images/Semo.jpg',
+  yam_egg:                  'images/yam_egg.jpg',
+  akara_pap:                'images/Akara_pap.jpg',
+  pap_moi_moi:              'images/pap_moi_moi.jpg',
+  custard_moi_moi:          'images/Custard_moi_moi.jpg',
+  custard_akara:            'images/Custard_akara.jpg',
+  noodles:                  'images/Noodles.jpg',
+  agege_bread_egg_sauce:    'images/Agege_bread_egg_sauce.jpg',
+  agege_bread_ewa_agoyin:   'images/agege_bread_ewa_agoyin.jpg',
+  fried_plantain:           'images/Fried_plantain.jpg',
+  boiled_plantain:          'images/Boiled_plantain.jpg',
+  beans_porridge:           'images/Beans_porridge.jpg',
+  fried_yam:                'images/Fried_yam.jpg',
+  fried_potato:             'images/Fried_potato.jpg',
+  puff_puff:                'images/puff_puff.jpg',
+  small_chops:              'images/Small_chops.jpg',
+  suya:                     'images/Suya.jpg',
+  yam_pottage:              'images/yam_pottage.jpg',
+  fried_yam_pepper_sauce:   'images/fried_yam_peppersauce.jpg',
+  garri:                    'images/Garri.jpg',
+  fried_chicken:            'images/Fried_chicken.jpg',
+  fried_beef:               'images/Fried_beef.jpg',
+  fried_turkey:             'images/Fried_turkey.jpg',
+  buka_stew:                'images/Stew.jpg',
+  pancake:                  'images/Pancake.jpg',
+  // aliases used in RECIPES
+  moi_moi:                  'images/pap_moi_moi.jpg',
+  akara:                    'images/Akara_pap.jpg',
+  pepper_soup:              'images/Goat_Meat_Peppersoup.jpg',
+  oatmeal:                  'images/Beans_porridge.jpg',
 };
 
 // ─────────────────────────────────────────────
@@ -159,7 +88,7 @@ const MEALS = [
   //  RICE
   // ══════════════════════════════
   { id:1, name:'Jollof Rice', category:'Rice', emoji:'🍚',
-    img: IMAGES.jollof, cost:8500, servings:4,
+    img: IMAGES.jollof_rice, cost:8500, servings:4,
     note:'₦8,500 for 4 servings (≈₦2,125/person). Chicken Republic Refuel: ₦900 single',
     ingredients:['rice (1kg)','tomatoes (4)','red peppers','scotch bonnet','onion','vegetable oil','chicken (500g)','seasoning cubes','thyme','curry','bay leaf'] },
 
@@ -174,7 +103,7 @@ const MEALS = [
     ingredients:['rice (1kg)','coconut milk (400ml)','tomatoes','peppers','onion','seasoning cubes','vegetable oil'] },
 
   { id:4, name:'White Rice and Stew', category:'Rice', emoji:'🍲',
-    img: IMAGES.White_Rice_Stew, cost:7000, servings:4,
+    img: IMAGES.white_rice_stew, cost:7000, servings:4,
     note:'Everyday Nigerian staple. Easy, filling, affordable',
     ingredients:['rice (1kg)','tomatoes (5)','peppers','onion','vegetable oil','chicken (400g)','seasoning cubes'] },
 
@@ -184,7 +113,7 @@ const MEALS = [
     ingredients:['rice (500g)','honey beans (500g)','palm oil','peppers','onion','seasoning cubes'] },
 
   { id:6, name:'Jollof Spaghetti', category:'Rice', emoji:'🍝',
-    img: IMAGES.Jollof_spaghetti, cost:5500, servings:4,
+    img: IMAGES.jollof_spaghetti, cost:5500, servings:4,
     note:'Budget-friendly twist on Jollof. Chicken Republic Refuel spaghetti: ₦900',
     ingredients:['spaghetti (500g)','tomatoes','peppers','onion','vegetable oil','seasoning cubes','chicken (300g)','thyme','curry'] },
 
@@ -212,7 +141,7 @@ const MEALS = [
     ingredients:['ground ogbono seeds (200g)','spinach','assorted meat (400g)','palm oil','ground crayfish','peppers','seasoning cubes'] },
 
   { id:11, name:'Goat Meat Pepper Soup', category:'Soups', emoji:'🌶️',
-    img: IMAGES.Goat_Meat_Peppersoup, cost:10000, servings:4,
+    img: IMAGES.goatmeat_peppersoup, cost:10000, servings:4,
     note:'Goat meat: ₦6,500/kg in 2025. Best enjoyed hot as a starter or light meal',
     ingredients:['goat meat (600g)','pepper soup spice mix','uziza leaves','scotch bonnet peppers','onion','ground crayfish','seasoning cubes'] },
 
@@ -263,7 +192,7 @@ const MEALS = [
     ingredients:['yam (½ tuber)','eggs (4)','tomatoes','scotch bonnet peppers','onion','vegetable oil','seasoning cube'] },
 
   { id:20, name:'Akara and Pap', category:'Breakfast', emoji:'🫓',
-    img: IMAGES.Akara_pap, cost:2500, servings:3,
+    img: IMAGES.akara_pap, cost:2500, servings:3,
     note:'Street akara: ₦200–500. Pap (ogi) from corn: ₦1,500/kg powder',
     ingredients:['black-eyed beans peeled (2 cups)','scotch bonnet pepper','onion','vegetable oil','corn pap powder','water'] },
 
@@ -292,9 +221,9 @@ const MEALS = [
     note:'Agege bread loaf: ₦1,200 in 2025. Lagos breakfast icon',
     ingredients:['Agege bread (half loaf)','eggs (3)','tomatoes','peppers','onion','vegetable oil'] },
 
-  { id:26, name:'agege_bread_ewa_agoyin', category:'Breakfast', emoji:'🍞',
+  { id:26, name:'Agege Bread and Ewa Agoyin', category:'Breakfast', emoji:'🍞',
     img: IMAGES.agege_bread_ewa_agoyin, cost:2200, servings:2,
-    note:'Classic Lagos street breakfast. Hot akara + fresh Agege bread',
+    note:'Classic Lagos street breakfast. Hot beans + fresh Agege bread',
     ingredients:['Agege bread (half loaf)','black-eyed beans peeled (1 cup)','pepper','onion','palm oil'] },
 
   { id:27, name:'Pancake', category:'Breakfast', emoji:'🥞',
@@ -318,7 +247,7 @@ const MEALS = [
     ingredients:['brown beans (2 cups)','palm oil','peppers','onion','ground crayfish','seasoning cubes','ripe plantain (2)'] },
 
   { id:31, name:'Yam Pottage (Asaro)', category:'Breakfast', emoji:'🍠',
-    img: IMAGES.Yam_Pottage, cost:5000, servings:4,
+    img: IMAGES.yam_pottage, cost:5000, servings:4,
     note:'One-pot meal — yam + palm oil + spinach. Comforting and complete',
     ingredients:['yam (½ tuber)','palm oil','peppers','onion','ground crayfish','fresh spinach','seasoning cubes'] },
 
@@ -341,7 +270,7 @@ const MEALS = [
     ingredients:['beef (500g)','yaji (suya spice)','groundnut powder','onion','cabbage','tomatoes'] },
 
   { id:35, name:'Fried Yam and Pepper Sauce', category:'Snacks', emoji:'🍟',
-    img: IMAGES.Fried_Yam_PepperSauce, cost:3000, servings:3,
+    img: IMAGES.fried_yam_pepper_sauce, cost:3000, servings:3,
     note:'Street: ₦500–1,000 per plate in 2025. Crispy outside, soft inside',
     ingredients:['yam (½ tuber)','vegetable oil (for deep frying)','tomatoes','peppers','onion','seasoning cube'] },
 
@@ -374,7 +303,7 @@ const MEALS = [
     ingredients:['turkey (half, cut up)','seasoning cubes','curry powder','thyme','onion','garlic','ginger','vegetable oil'] },
 
   { id:41, name:'Buka Beef Stew', category:'Proteins', emoji:'🍲',
-    img: IMAGES.stew, cost:7500, servings:5,
+    img: IMAGES.buka_stew, cost:7500, servings:5,
     note:'Base stew for rice, yam, bread. Make in bulk and refrigerate for the week',
     ingredients:['beef (500g)','tomatoes (6)','red peppers','scotch bonnet peppers','onion','vegetable oil','seasoning cubes','curry','thyme'] },
 ];
@@ -385,7 +314,7 @@ const MEALS = [
 const RECIPES = [
   {
     id:1, mealId:1, name:'Jollof Rice', emoji:'🍚', category:'Rice',
-    img: IMAGES.jollof,
+    img: IMAGES.jollof_rice,
     cookTime:60, servings:4, cost:8500,
     ingredients:['1kg long grain rice (₦2,400)','5 large tomatoes (₦2,000)','3 red peppers','2 scotch bonnet','2 large onions (₦600)','½ cup vegetable oil (₦500)','500g chicken (₦2,400)','2 seasoning cubes','1 tsp thyme','1 tsp curry','2 bay leaves','Salt to taste'],
     steps:[
@@ -401,7 +330,7 @@ const RECIPES = [
     ]
   },
   {
-    id:2, mealId:9, name:'Egusi Soup', emoji:'🥣', category:'Soups',
+    id:2, mealId:7, name:'Egusi Soup', emoji:'🥣', category:'Soups',
     img: IMAGES.egusi,
     cookTime:50, servings:6, cost:12000,
     ingredients:['500g ground egusi (₦4,500)','500g assorted meat (₦5,000)','150g stockfish (₦1,500)','3 tbsp palm oil (₦750)','2 tbsp ground crayfish (₦800)','1 large onion','3–4 scotch bonnet peppers','2 cups washed bitter leaf or spinach','2 seasoning cubes','Salt to taste'],
@@ -417,8 +346,8 @@ const RECIPES = [
     ]
   },
   {
-    id:3, mealId:27, name:'Akara (Bean Cakes)', emoji:'🫓', category:'Breakfast',
-    img: IMAGES.akara,
+    id:3, mealId:20, name:'Akara (Bean Cakes)', emoji:'🫓', category:'Breakfast',
+    img: IMAGES.akara_pap,
     cookTime:30, servings:5, cost:2500,
     ingredients:['2 cups black-eyed beans — peeled (₦1,800)','1 medium onion (₦200)','2 scotch bonnet peppers','1 tsp salt','Vegetable oil for deep frying (₦500)'],
     steps:[
@@ -431,8 +360,8 @@ const RECIPES = [
     ]
   },
   {
-    id:4, mealId:28, name:'Moi Moi', emoji:'🟤', category:'Breakfast',
-    img: IMAGES.moi_moi,
+    id:4, mealId:21, name:'Moi Moi', emoji:'🟤', category:'Breakfast',
+    img: IMAGES.pap_moi_moi,
     cookTime:60, servings:6, cost:3500,
     ingredients:['3 cups black-eyed beans peeled (₦2,200)','3 red bell peppers (₦800)','2 scotch bonnet peppers','1 large onion','¼ cup vegetable oil (₦400)','2 hard-boiled eggs (₦260)','100g fish fillet (₦600)','2 tsp ground crayfish','2 seasoning cubes','Salt to taste'],
     steps:[
@@ -446,7 +375,7 @@ const RECIPES = [
     ]
   },
   {
-    id:5, mealId:13, name:'Efo Riro', emoji:'🥬', category:'Soups',
+    id:5, mealId:9, name:'Efo Riro', emoji:'🥬', category:'Soups',
     img: IMAGES.vegetable_soup,
     cookTime:45, servings:5, cost:9500,
     ingredients:['500g fresh spinach / tete (₦1,500)','400g assorted meat (₦4,000)','3 tbsp palm oil (₦750)','2 red bell peppers (₦600)','3 scotch bonnet peppers','1 large onion','2 tbsp locust beans (iru) (₦600)','2 tbsp ground crayfish (₦800)','2 seasoning cubes','Salt to taste'],
@@ -462,7 +391,7 @@ const RECIPES = [
     ]
   },
   {
-    id:6, mealId:26, name:'Yam and Egg Sauce', emoji:'🥚', category:'Breakfast',
+    id:6, mealId:19, name:'Yam and Egg Sauce', emoji:'🥚', category:'Breakfast',
     img: IMAGES.yam_egg,
     cookTime:30, servings:3, cost:5500,
     ingredients:['½ yam tuber (₦3,000)','4 large eggs (₦500)','2 ripe tomatoes (₦600)','2 scotch bonnet peppers','1 medium onion (₦200)','3 tbsp vegetable oil (₦300)','1 seasoning cube','Salt to taste','Spring onions for garnish'],
@@ -477,8 +406,8 @@ const RECIPES = [
     ]
   },
   {
-    id:7, mealId:33, name:'Yam Pottage (Asaro)', emoji:'🍠', category:'Breakfast',
-    img: IMAGES.pounded_yam,
+    id:7, mealId:31, name:'Yam Pottage (Asaro)', emoji:'🍠', category:'Breakfast',
+    img: IMAGES.yam_pottage,
     cookTime:40, servings:4, cost:5000,
     ingredients:['½ tuber yam (₦3,000)','3 tbsp palm oil (₦750)','2 ripe tomatoes (₦600)','2 scotch bonnet peppers','1 large onion (₦200)','2 tbsp ground crayfish (₦600)','A handful of spinach','2 seasoning cubes','Salt to taste'],
     steps:[
@@ -506,7 +435,7 @@ const RECIPES = [
     ]
   },
   {
-    id:9, mealId:34, name:'Beans Porridge with Plantain', emoji:'🫘', category:'Breakfast',
+    id:9, mealId:30, name:'Beans Porridge with Plantain', emoji:'🫘', category:'Breakfast',
     img: IMAGES.beans_porridge,
     cookTime:50, servings:4, cost:4000,
     ingredients:['2 cups brown beans (₦2,200)','2 tbsp palm oil (₦500)','2 ripe plantains (₦1,000)','2 scotch bonnet peppers','1 large onion (₦200)','2 tbsp ground crayfish (₦600)','2 seasoning cubes','Salt to taste','Smoked fish optional (₦800)'],
@@ -520,7 +449,7 @@ const RECIPES = [
     ]
   },
   {
-    id:10, mealId:36, name:'Puff Puff', emoji:'🍩', category:'Snacks',
+    id:10, mealId:32, name:'Puff Puff', emoji:'🍩', category:'Snacks',
     img: IMAGES.puff_puff,
     cookTime:35, servings:8, cost:1800,
     ingredients:['3 cups plain flour (₦600)','2 tsp instant yeast (₦200)','½ cup sugar (₦200)','½ tsp nutmeg','1½ cups warm water','1 tsp salt','Vegetable oil for deep frying (₦500)'],
@@ -551,7 +480,7 @@ const RECIPES = [
     ]
   },
   {
-    id:12, mealId:14, name:'Afang Soup', emoji:'🌱', category:'Soups',
+    id:12, mealId:9, name:'Afang Soup', emoji:'🌱', category:'Soups',
     img: IMAGES.vegetable_soup,
     cookTime:50, servings:5, cost:13000,
     ingredients:['400g afang leaves sliced thin (₦3,500)','400g waterleaf (₦1,000)','400g assorted meat (₦4,000)','200g periwinkle (₦1,500)','3 tbsp palm oil (₦750)','3 tbsp ground crayfish (₦1,000)','Stockfish and smoked fish (₦1,500)','Seasoning cubes, peppers, salt'],
@@ -567,7 +496,7 @@ const RECIPES = [
     ]
   },
   {
-    id:13, mealId:39, name:'Suya', emoji:'🍢', category:'Snacks',
+    id:13, mealId:34, name:'Suya', emoji:'🍢', category:'Snacks',
     img: IMAGES.suya,
     cookTime:30, servings:3, cost:5000,
     ingredients:['500g beef sirloin or rump (₦2,750)','4 tbsp ground groundnut (₦500)','2 tbsp yaji suya spice (₦400)','1 tsp ginger powder','1 tsp garlic powder','1 tsp paprika','Salt to taste','Sliced tomatoes, onions, cabbage to serve (₦500)'],
@@ -582,8 +511,8 @@ const RECIPES = [
     ]
   },
   {
-    id:14, mealId:15, name:'Goat Pepper Soup', emoji:'🌶️', category:'Soups',
-    img: IMAGES.pepper_soup,
+    id:14, mealId:11, name:'Goat Pepper Soup', emoji:'🌶️', category:'Soups',
+    img: IMAGES.goatmeat_peppersoup,
     cookTime:55, servings:4, cost:10000,
     ingredients:['600g goat meat (₦3,900)','2 tbsp pepper soup spice mix (₦500)','2 scotch bonnet peppers','1 medium onion (₦200)','A handful of uziza leaves (₦500)','2 seasoning cubes (₦100)','2 tbsp ground crayfish (₦800)','Salt to taste'],
     steps:[
@@ -597,23 +526,20 @@ const RECIPES = [
     ]
   },
   {
-    id:15, mealId:46, name:'Abacha (African Salad)', emoji:'🥗', category:'Delicacies',
-    img: IMAGES.vegetable_soup,
-    cookTime:20, servings:4, cost:6500,
-    ingredients:['2 cups cassava abacha (₦1,500)','200g ugba oil bean (₦2,000)','3 tbsp palm oil (₦750)','1 tsp potash dissolved in water (₦200)','2 tbsp ground crayfish (₦600)','3 garden eggs (₦400)','Utazi leaves, peppers, onion (₦500)','Smoked fish (₦800)','Salt, seasoning cubes'],
+    id:15, mealId:37, name:'Garri and Groundnut', emoji:'🥛', category:'Snacks',
+    img: IMAGES.garri,
+    cookTime:5, servings:2, cost:800,
+    ingredients:['2 cups garri (₦300)','cold water','100g roasted groundnut (₦300)','sugar to taste','milk optional','coconut optional'],
     steps:[
-      'Soak abacha in hot water for 10 minutes until softened. Drain and rinse with cold water.',
-      'Mix palm oil with the potash solution until it emulsifies into a bright orange paste.',
-      'Season palm oil mix with crayfish, crumbled seasoning, salt, and sliced peppers.',
-      'Add ugba, abacha, and shredded smoked fish to the palm oil mix. Toss to combine.',
-      'Slice garden eggs into wedges and add.',
-      'Chiffonade utazi leaves and toss in.',
-      'Taste, adjust. Add sliced onion rings on top. Serve immediately.',
+      'Pour garri into a bowl.',
+      'Add cold water until the garri is just soaked but not too watery.',
+      'Add roasted groundnut, sugar, and milk if desired.',
+      'Mix lightly and enjoy immediately as a refreshing snack.',
     ]
   },
   {
     id:16, mealId:6, name:'Ofada Rice and Ayamase Stew', emoji:'🌿', category:'Rice',
-    img: IMAGES.jollof,
+    img: IMAGES.jollof_rice,
     cookTime:60, servings:3, cost:9500,
     ingredients:['1kg ofada rice (₦3,500)','400g assorted meat (₦4,000)','3 red bell peppers (₦900)','5 tatashe peppers','5 scotch bonnet peppers','3 tbsp palm oil (₦750)','3 tbsp locust beans (₦600)','Seasoning, crayfish, salt'],
     steps:[
@@ -629,7 +555,7 @@ const RECIPES = [
   },
   {
     id:17, mealId:3, name:'Coconut Rice', emoji:'🥥', category:'Rice',
-    img: IMAGES.coconut,
+    img: IMAGES.coconut_rice,
     cookTime:40, servings:4, cost:7500,
     ingredients:['1kg rice (₦2,400)','400ml coconut milk (₦2,000)','2 cups water','2 tomatoes (₦600)','2 peppers','1 onion (₦200)','2 tbsp vegetable oil','Seasoning, salt','Chicken or prawns optional (₦2,000)'],
     steps:[
@@ -643,8 +569,8 @@ const RECIPES = [
     ]
   },
   {
-    id:18, mealId:10, name:'Okra Soup', emoji:'🫑', category:'Soups',
-    img: IMAGES.ogbono_soup,
+    id:18, mealId:8, name:'Okra Soup', emoji:'🫑', category:'Soups',
+    img: IMAGES.okro_soup,
     cookTime:40, servings:5, cost:9500,
     ingredients:['500g fresh okra (₦2,500)','400g assorted meat (₦4,000)','100g stockfish (₦1,000)','3 tbsp palm oil (₦750)','2 tbsp ground crayfish (₦800)','2 scotch bonnet peppers','1 onion (₦200)','Seasoning cubes, salt'],
     steps:[
@@ -658,8 +584,8 @@ const RECIPES = [
     ]
   },
   {
-    id:19, mealId:7, name:'Spaghetti Jollof', emoji:'🍝', category:'Rice',
-    img: IMAGES.jollof,
+    id:19, mealId:6, name:'Spaghetti Jollof', emoji:'🍝', category:'Rice',
+    img: IMAGES.jollof_spaghetti,
     cookTime:35, servings:4, cost:5500,
     ingredients:['500g spaghetti (₦1,200)','4 tomatoes (₦1,600)','3 peppers','1 large onion (₦200)','¼ cup vegetable oil (₦250)','1 tsp thyme','1 tsp curry','2 seasoning cubes','Salt to taste','Chicken 300g optional (₦1,440)'],
     steps:[
@@ -672,7 +598,7 @@ const RECIPES = [
     ]
   },
   {
-    id:20, mealId:29, name:'Noodles and Egg', emoji:'🍜', category:'Breakfast',
+    id:20, mealId:24, name:'Noodles and Egg', emoji:'🍜', category:'Breakfast',
     img: IMAGES.noodles,
     cookTime:15, servings:2, cost:1200,
     ingredients:['2 packs Indomie noodles (₦500)','2 eggs (₦260)','1 carrot sliced (₦100)','1 onion (₦100)','1 pepper','2 tbsp vegetable oil (₦200)','Salt to taste'],
@@ -687,20 +613,8 @@ const RECIPES = [
     ]
   },
   {
-    id:21, mealId:38, name:'Boli and Groundnut', emoji:'🍌', category:'Snacks',
+    id:21, mealId:28, name:'Fried Plantain and Egg', emoji:'🍌', category:'Breakfast',
     img: IMAGES.fried_plantain,
-    cookTime:20, servings:2, cost:1500,
-    ingredients:['2 ripe plantains (₦1,000)','100g roasted groundnut (₦400)','Salt to taste','Pepper sauce optional'],
-    steps:[
-      'Peel plantains and score lightly with a knife.',
-      'Place on a hot grill or directly over medium gas flame.',
-      'Turn every 4–5 minutes until all sides are charred and cooked through — about 15–18 minutes total.',
-      'Serve hot with roasted groundnut and optional pepper sauce.',
-    ]
-  },
-  {
-    id:22, mealId:31, name:'Fried Plantain and Egg', emoji:'🍌', category:'Breakfast',
-    img: IMAGES.boiled_plantain,
     cookTime:20, servings:2, cost:2800,
     ingredients:['2 ripe plantains (₦1,000)','3 eggs (₦380)','1 tomato (₦300)','1 pepper','1 small onion (₦150)','2 tbsp vegetable oil (₦200)','Salt to taste'],
     steps:[
@@ -712,7 +626,19 @@ const RECIPES = [
     ]
   },
   {
-    id:23, mealId:25, name:'Amala and Ewedu', emoji:'🌿', category:'Swallows',
+    id:22, mealId:29, name:'Boiled Plantain and Egg Sauce', emoji:'🍌', category:'Breakfast',
+    img: IMAGES.boiled_plantain,
+    cookTime:20, servings:2, cost:2500,
+    ingredients:['2 unripe or half-ripe plantains (₦800)','3 eggs (₦380)','1 tomato (₦300)','1 pepper','1 small onion (₦150)','2 tbsp vegetable oil (₦200)','Seasoning, salt'],
+    steps:[
+      'Peel plantains, cut into chunks, and boil in salted water for 15–20 minutes until soft.',
+      'Heat oil in a pan. Sauté onion, tomato and pepper for 2–3 minutes.',
+      'Break in eggs, scramble or set as desired. Season with salt.',
+      'Serve egg sauce over boiled plantain.',
+    ]
+  },
+  {
+    id:23, mealId:14, name:'Amala and Ewedu', emoji:'🌿', category:'Swallows',
     img: IMAGES.pounded_yam,
     cookTime:30, servings:3, cost:7000,
     ingredients:['2 cups plantain flour elubo (₦2,000)','3 cups water for amala','300g jute leaves ewedu (₦800)','2 tbsp palm oil (₦500)','1 tbsp ground crayfish (₦500)','Beef stew and gbegiri (₦2,500)','Seasoning, salt'],
@@ -722,42 +648,40 @@ const RECIPES = [
       'Wash jute leaves and blend or use a traditional broom (ijabe) to break down the texture.',
       'In a small pot, add blended ewedu with water, peppers, crayfish, and seasoning.',
       'Cook on medium heat for 10 minutes, stirring regularly. Add palm oil.',
-      'Serve amala with ewedu and beef stew (and gbegiri/bẹan soup if available).',
+      'Serve amala with ewedu and beef stew (and gbegiri/bean soup if available).',
     ]
   },
   {
-    id:24, mealId:44, name:'Nkwobi', emoji:'🥩', category:'Delicacies',
+    id:24, mealId:39, name:'Fried Beef', emoji:'🥩', category:'Proteins',
     img: IMAGES.fried_beef,
-    cookTime:90, servings:4, cost:12000,
-    ingredients:['1kg cow foot bokoto (₦5,000)','3 tbsp palm oil (₦750)','2 tsp potash dissolved in 2 tbsp water','100g ugba oil bean (₦1,500)','Utazi leaves (₦500)','3 scotch bonnet peppers','1 onion','2 tbsp ground crayfish (₦800)','Salt, seasoning cubes'],
+    cookTime:40, servings:4, cost:5500,
+    ingredients:['500g beef (₦2,750)','1 onion (₦200)','2 seasoning cubes','1 tsp curry powder','1 tsp thyme','Vegetable oil for frying (₦500)','Garlic and ginger (₦300)'],
     steps:[
-      'Clean cow foot thoroughly. Cook with onion, seasoning, and salt for 60–75 minutes until very tender.',
-      'Cut into bite-size chunks. Reserve a little stock.',
-      'Mix palm oil and potash solution together — it will emulsify into an orange-yellow paste.',
-      'Add crayfish, blended peppers, and crumbled seasoning to the palm oil paste.',
-      'Add cooked cow foot and ugba to the sauce. Toss to coat thoroughly.',
-      'Taste and adjust. Transfer to a serving pot.',
-      'Chiffonade utazi leaves and scatter over the top. Serve warm with palm wine.',
+      'Wash and cut beef into chunks.',
+      'Season with onion, garlic, ginger, curry, thyme, seasoning cubes, and salt.',
+      'Steam for 15 minutes in a covered pot.',
+      'Heat oil and deep-fry beef in batches until golden brown and slightly crispy.',
+      'Drain on paper towels. Serve as a side protein.',
     ]
   },
   {
-    id:25, mealId:11, name:'Banga Soup', emoji:'🌴', category:'Soups',
-    img: IMAGES.peppersoup,
-    cookTime:60, servings:5, cost:11000,
-    ingredients:['1 bunch palm fruits (₦3,000)','500g catfish or assorted meat (₦3,500)','2 tbsp ground crayfish (₦800)','2 scotch bonnet peppers','1 onion','Banga spice mix oruwo (₦500)','Bitter leaf optional (₦500)','Salt, seasoning cubes'],
+    id:25, mealId:12, name:'Catfish Pepper Soup', emoji:'🐟', category:'Soups',
+    img: IMAGES.catfish_peppersoup,
+    cookTime:35, servings:4, cost:11500,
+    ingredients:['600g catfish (₦4,200)','2 tbsp pepper soup spice mix (₦500)','2 scotch bonnet peppers','1 medium onion (₦200)','Uziza leaves (₦500)','2 seasoning cubes','2 tbsp ground crayfish (₦800)','Salt to taste'],
     steps:[
-      'Boil palm fruits for 20 minutes until soft. Pound in a mortar and extract juice by squeezing with water.',
-      'Strain out chaff. You should have rich palm fruit extract.',
-      'Boil the extract in a pot, stirring regularly. Skim froth.',
-      'When it reduces and thickens slightly (about 15 minutes), add meat or fish.',
-      'Add crayfish, blended peppers, onion, and banga spice mix.',
-      'Cook for 15–20 minutes until soup is rich and fragrant. Season to taste.',
-      'Add bitter leaf in the last 5 minutes optionally. Serve with starch, eba, or pounded yam.',
+      'Clean catfish thoroughly with alum or lemon to remove slime.',
+      'Place in a pot with onion, half the pepper soup spice, seasoning, and salt.',
+      'Add 4 cups of water. Bring to a boil.',
+      'Add blended scotch bonnets, crayfish, and remaining spice.',
+      'Simmer for 15–18 minutes. Do not over-stir to keep fish intact.',
+      'Add sliced uziza leaves. Cook 3 more minutes.',
+      'Serve hot. Best enjoyed fresh.',
     ]
   },
   {
     id:26, mealId:4, name:'White Rice and Tomato Stew', emoji:'🍲', category:'Rice',
-    img: IMAGES.stew,
+    img: IMAGES.white_rice_stew,
     cookTime:45, servings:4, cost:7000,
     ingredients:['1kg long grain rice (₦2,400)','5 tomatoes (₦2,000)','3 peppers','1 large onion (₦200)','¼ cup vegetable oil (₦250)','500g chicken (₦2,400)','Seasoning, curry, salt'],
     steps:[
@@ -771,7 +695,7 @@ const RECIPES = [
     ]
   },
   {
-    id:27, mealId:17, name:'Ogbono Soup', emoji:'🫙', category:'Soups',
+    id:27, mealId:10, name:'Ogbono Soup', emoji:'🫙', category:'Soups',
     img: IMAGES.ogbono_soup,
     cookTime:45, servings:5, cost:9500,
     ingredients:['200g ground ogbono seeds (₦4,000)','500g assorted meat (₦5,000)','3 tbsp palm oil (₦750)','2 tbsp crayfish (₦800)','3 peppers','1 onion','Spinach or bitter leaf (₦800)','Seasoning, salt'],
@@ -786,7 +710,7 @@ const RECIPES = [
     ]
   },
   {
-    id:28, mealId:21, name:'Pounded Yam and Egusi', emoji:'🍠', category:'Swallows',
+    id:28, mealId:14, name:'Pounded Yam and Egusi', emoji:'🍠', category:'Swallows',
     img: IMAGES.pounded_yam,
     cookTime:60, servings:3, cost:10500,
     ingredients:['1 tuber yam (₦6,000)','300g ground egusi (₦2,700)','Assorted meat 300g (₦3,000)','3 tbsp palm oil (₦750)','Crayfish, peppers, seasoning (₦1,200)'],
@@ -800,21 +724,23 @@ const RECIPES = [
     ]
   },
   {
-    id:29, mealId:32, name:'Oatmeal with Banana', emoji:'🥣', category:'Breakfast',
-    img: IMAGES.oatmeal,
-    cookTime:15, servings:2, cost:1800,
-    ingredients:['2 cups rolled oats (₦800)','3 cups milk or water','2 ripe bananas (₦400)','2 tbsp honey or sugar (₦200)','½ tsp cinnamon','A pinch of nutmeg'],
+    id:29, mealId:27, name:'Pancake', emoji:'🥞', category:'Breakfast',
+    img: IMAGES.pancake,
+    cookTime:20, servings:3, cost:2000,
+    ingredients:['2 cups flour (₦400)','2 eggs (₦260)','1 cup milk (₦300)','2 tbsp sugar (₦100)','1 tsp baking powder','1 tbsp butter (₦200)','Vegetable oil','Vanilla extract'],
     steps:[
-      'Bring milk or water to a gentle boil.',
-      'Add oats, stir, and reduce heat to low.',
-      'Cook for 5–7 minutes, stirring occasionally, until desired consistency.',
-      'Add honey or sugar and cinnamon. Stir.',
-      'Slice bananas on top. Sprinkle nutmeg. Serve warm.',
+      'Mix flour, sugar, and baking powder in a bowl.',
+      'In another bowl, whisk eggs, milk, melted butter, and vanilla.',
+      'Combine wet and dry ingredients. Mix until just smooth — do not over-mix.',
+      'Heat a non-stick pan on medium. Lightly grease with oil or butter.',
+      'Pour a ladleful of batter. Cook until bubbles form on top, about 2 minutes.',
+      'Flip and cook 1 more minute until golden.',
+      'Serve with honey, jam, or sliced bananas.',
     ]
   },
   {
-    id:30, mealId:41, name:'Fried Yam and Pepper Sauce', emoji:'🍟', category:'Snacks',
-    img: IMAGES.yam_egg,
+    id:30, mealId:35, name:'Fried Yam and Pepper Sauce', emoji:'🍟', category:'Snacks',
+    img: IMAGES.fried_yam_pepper_sauce,
     cookTime:25, servings:3, cost:3000,
     ingredients:['½ tuber yam (₦3,000)','Vegetable oil for frying (₦500)','2 tomatoes (₦600)','3 peppers','1 onion (₦200)','Seasoning, salt'],
     steps:[
@@ -1059,7 +985,7 @@ function openMealPicker(day, time) {
     const customId = 'custom_' + Date.now();
     state.plan[day][time] = customId;
     const customs = JSON.parse(localStorage.getItem('mp_customs') || '{}');
-    customs[customId] = { id: customId, name, emoji: '🍽️', category: 'Custom', cost: 0, img: IMAGES.default, ingredients: [] };
+    customs[customId] = { id: customId, name, emoji: '🍽️', category: 'Custom', cost: 0, img: '', ingredients: [] };
     localStorage.setItem('mp_customs', JSON.stringify(customs));
     saveState(); closeModal(); renderPlanner();
     showToast(`${name} added to ${day} ${capitalize(time)}`, 'success');
@@ -1348,7 +1274,6 @@ function runBudgetEstimate() {
   const children = Number(document.getElementById('numChildren').value) || 0;
   const days = Number(document.getElementById('numDays').value) || 7;
 
-  // 2025 Lagos/Abuja estimates (home cooking)
   const DAILY_PER_ADULT = { economy: 1500, standard: 2500, premium: 4500 };
   const DAILY_PER_CHILD = { economy: 900, standard: 1500, premium: 2500 };
 
