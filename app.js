@@ -168,7 +168,7 @@ const MEALS = [
     ingredients:['rice (1kg)','coconut milk (400ml)','tomatoes','peppers','onion','seasoning cubes','vegetable oil'] },
 
   { id:4, name:'White Rice and Stew', category:'Rice', emoji:'🍲',
-    img: IMAGES.stew, cost:7000, servings:4,
+    img: IMAGES.White_Rice_Stew, cost:7000, servings:4,
     note:'Everyday Nigerian staple. Easy, filling, affordable',
     ingredients:['rice (1kg)','tomatoes (5)','peppers','onion','vegetable oil','chicken (400g)','seasoning cubes'] },
 
@@ -178,7 +178,7 @@ const MEALS = [
     ingredients:['rice (500g)','honey beans (500g)','palm oil','peppers','onion','seasoning cubes'] },
 
   { id:6, name:'Jollof Spaghetti', category:'Rice', emoji:'🍝',
-    img: IMAGES.spaghetti, cost:5500, servings:4,
+    img: IMAGES.Jollof_spaghetti, cost:5500, servings:4,
     note:'Budget-friendly twist on Jollof. Chicken Republic Refuel spaghetti: ₦900',
     ingredients:['spaghetti (500g)','tomatoes','peppers','onion','vegetable oil','seasoning cubes','chicken (300g)','thyme','curry'] },
 
@@ -206,7 +206,7 @@ const MEALS = [
     ingredients:['ground ogbono seeds (200g)','spinach','assorted meat (400g)','palm oil','ground crayfish','peppers','seasoning cubes'] },
 
   { id:11, name:'Goat Meat Pepper Soup', category:'Soups', emoji:'🌶️',
-    img: IMAGES.peppersoup, cost:10000, servings:4,
+    img: IMAGES.Goat_Meat_Peppersoup, cost:10000, servings:4,
     note:'Goat meat: ₦6,500/kg in 2025. Best enjoyed hot as a starter or light meal',
     ingredients:['goat meat (600g)','pepper soup spice mix','uziza leaves','scotch bonnet peppers','onion','ground crayfish','seasoning cubes'] },
 
@@ -257,22 +257,22 @@ const MEALS = [
     ingredients:['yam (½ tuber)','eggs (4)','tomatoes','scotch bonnet peppers','onion','vegetable oil','seasoning cube'] },
 
   { id:20, name:'Akara and Pap', category:'Breakfast', emoji:'🫓',
-    img: IMAGES.akara, cost:2500, servings:3,
+    img: IMAGES.Akara_pap, cost:2500, servings:3,
     note:'Street akara: ₦200–500. Pap (ogi) from corn: ₦1,500/kg powder',
     ingredients:['black-eyed beans peeled (2 cups)','scotch bonnet pepper','onion','vegetable oil','corn pap powder','water'] },
 
   { id:21, name:'Pap and Moi Moi', category:'Breakfast', emoji:'🟤',
-    img: IMAGES.moi_moi, cost:3500, servings:4,
+    img: IMAGES.pap_moi_moi, cost:3500, servings:4,
     note:'Moi Moi + pap is a beloved Nigerian power breakfast',
     ingredients:['black-eyed beans peeled (3 cups)','peppers','onion','vegetable oil','eggs (2)','ground crayfish','seasoning','fish','corn pap powder'] },
 
   { id:22, name:'Custard and Moi Moi', category:'Breakfast', emoji:'🍮',
-    img: IMAGES.custard, cost:3000, servings:3,
+    img: IMAGES.custard_moi_moi, cost:3000, servings:3,
     note:'Custard powder: ₦1,500. Smooth, sweet and satisfying morning meal',
     ingredients:['custard powder (4 tbsp)','milk','sugar','hot water','moi moi (2 wraps)'] },
 
   { id:23, name:'Custard and Akara', category:'Breakfast', emoji:'🍮',
-    img: IMAGES.custard, cost:2500, servings:3,
+    img: IMAGES.custard_akara, cost:2500, servings:3,
     note:'Hot custard + crispy akara — perfect combo for a quick morning',
     ingredients:['custard powder (4 tbsp)','milk','sugar','hot water','black-eyed beans peeled (2 cups)','pepper','onion','vegetable oil'] },
 
@@ -282,14 +282,14 @@ const MEALS = [
     ingredients:['Indomie noodles (2 packs)','eggs (2)','carrot (sliced)','onion','scotch bonnet pepper','vegetable oil'] },
 
   { id:25, name:'Agege Bread and Egg Sauce', category:'Breakfast', emoji:'🍞',
-    img: IMAGES.agege_bread, cost:2000, servings:2,
+    img: IMAGES.agege_bread_egg_sauce, cost:2000, servings:2,
     note:'Agege bread loaf: ₦1,200 in 2025. Lagos breakfast icon',
     ingredients:['Agege bread (half loaf)','eggs (3)','tomatoes','peppers','onion','vegetable oil'] },
 
-  { id:26, name:'Agege Bread and Akara', category:'Breakfast', emoji:'🍞',
-    img: IMAGES.agege_bread, cost:2200, servings:2,
+  { id:26, name:'agege_bread_ewa_agoyin', category:'Breakfast', emoji:'🍞',
+    img: IMAGES.agege_bread_ewa_agoyin, cost:2200, servings:2,
     note:'Classic Lagos street breakfast. Hot akara + fresh Agege bread',
-    ingredients:['Agege bread (half loaf)','black-eyed beans peeled (1 cup)','pepper','onion','vegetable oil'] },
+    ingredients:['Agege bread (half loaf)','black-eyed beans peeled (1 cup)','pepper','onion','palm oil'] },
 
   { id:27, name:'Pancake', category:'Breakfast', emoji:'🥞',
     img: IMAGES.pancake, cost:2000, servings:3,
@@ -312,7 +312,7 @@ const MEALS = [
     ingredients:['brown beans (2 cups)','palm oil','peppers','onion','ground crayfish','seasoning cubes','ripe plantain (2)'] },
 
   { id:31, name:'Yam Pottage (Asaro)', category:'Breakfast', emoji:'🍠',
-    img: IMAGES.yam_egg, cost:5000, servings:4,
+    img: IMAGES.Yam_Pottage, cost:5000, servings:4,
     note:'One-pot meal — yam + palm oil + spinach. Comforting and complete',
     ingredients:['yam (½ tuber)','palm oil','peppers','onion','ground crayfish','fresh spinach','seasoning cubes'] },
 
@@ -335,7 +335,7 @@ const MEALS = [
     ingredients:['beef (500g)','yaji (suya spice)','groundnut powder','onion','cabbage','tomatoes'] },
 
   { id:35, name:'Fried Yam and Pepper Sauce', category:'Snacks', emoji:'🍟',
-    img: IMAGES.fried_yam, cost:3000, servings:3,
+    img: IMAGES.Fried_Yam_PepperSauce, cost:3000, servings:3,
     note:'Street: ₦500–1,000 per plate in 2025. Crispy outside, soft inside',
     ingredients:['yam (½ tuber)','vegetable oil (for deep frying)','tomatoes','peppers','onion','seasoning cube'] },
 
@@ -367,7 +367,7 @@ const MEALS = [
     note:'Turkey: ₦12,000–15,000 whole in 2025. Festive favourite at Christmas and parties',
     ingredients:['turkey (half, cut up)','seasoning cubes','curry powder','thyme','onion','garlic','ginger','vegetable oil'] },
 
-  { id:41, name:'Tomato Beef Stew', category:'Proteins', emoji:'🍲',
+  { id:41, name:'Buka Beef Stew', category:'Proteins', emoji:'🍲',
     img: IMAGES.stew, cost:7500, servings:5,
     note:'Base stew for rice, yam, bread. Make in bulk and refrigerate for the week',
     ingredients:['beef (500g)','tomatoes (6)','red peppers','scotch bonnet peppers','onion','vegetable oil','seasoning cubes','curry','thyme'] },
