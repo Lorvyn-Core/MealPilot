@@ -1068,3 +1068,62 @@
 
 </body>
 </html>
+
+
+<!-- PRODUCTION AUTH PATCH START -->
+<script>
+const SUPABASE_URL = "https://golkwvdeuryujwfwazrf.supabase.co";
+const SUPABASE_ANON_KEY = "REPLACE_WITH_YOUR_ANON_KEY";
+
+const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+async function signUp(){
+  const email=document.getElementById('authEmail').value;
+  const password=document.getElementById('authPassword').value;
+  const username=document.getElementById('authUsername')?.value || email.split('@')[0];
+
+  const {data,error}=await _supabase.auth.signUp({
+    email,password,
+    options:{data:{username}}
+  });
+
+  if(error){console.error(error.message);return;}
+  console.log("signup ok",data);
+}
+
+async function signIn(){
+  const email=document.getElementById('authEmail').value;
+  const password=document.getElementById('authPassword').value;
+
+  const {data,error}=await _supabase.auth.signInWithPassword({
+    email,password
+  });
+
+  if(error){console.error(error.message);return;}
+  console.log("login ok",data);
+}
+
+async function loadUser(user){
+  const {data,error}=await _supabase
+    .from('profiles')
+    .select('*')
+    .eq('id',user.id)
+    .maybeSingle();
+
+  if(error){console.error(error.message);return;}
+  window.currentUser=data;
+  console.log("profile",data);
+}
+
+async function initAuth(){
+  const {data}=await _supabase.auth.getSession();
+  if(data.session) loadUser(data.session.user);
+
+  _supabase.auth.onAuthStateChange((e,s)=>{
+    if(s?.user) loadUser(s.user);
+  });
+}
+
+initAuth();
+</script>
+<!-- PRODUCTION AUTH PATCH END -->
