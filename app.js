@@ -384,7 +384,7 @@ const MEALS = [
   // ══════════════════════════════
   { id:1, name:'Jollof Rice', category:'Rice', emoji:'🍚',
     img: IMAGES.jollof_rice, cost:8500, servings:4,
-    note:'₦8,500 for 4 servings (≈₦2,125/person). Chicken Republic Refuel: ₦900 single',
+    note:'₦8,500 for 4 servings (≈₦2,125/person)',
     ingredients:['rice (1kg)','tomatoes (4)','red peppers','scotch bonnet','onion','vegetable oil','chicken (500g)','seasoning cubes','thyme','curry','bay leaf'] },
 
   { id:2, name:'Fried Rice', category:'Rice', emoji:'🍳',
@@ -409,7 +409,7 @@ const MEALS = [
 
   { id:6, name:'Jollof Spaghetti', category:'Rice', emoji:'🍝',
     img: IMAGES.jollof_spaghetti, cost:5500, servings:4,
-    note:'Budget-friendly twist on Jollof. Chicken Republic Refuel spaghetti: ₦900',
+    note:'Budget-friendly twist on Jollof. Budget-friendly and filling',
     ingredients:['spaghetti (500g)','tomatoes','peppers','onion','vegetable oil','seasoning cubes','chicken (300g)','thyme','curry'] },
 
   // ══════════════════════════════
@@ -1065,7 +1065,7 @@ const FOOD_TIPS = [
   '🫘 Soaking beans for 2 hours before cooking reduces cook time by 40% and reduces gas-causing compounds.',
   '🔥 For smoky Jollof Rice (party-style), crank up the heat in the final 5 minutes. Let it catch slightly at the bottom — Nigerians call this "party rice".',
   '🍳 Save leftover frying oil — it picks up flavour from plantain or chicken and makes your next stew even better.',
-  '💡 Chicken Republic\'s Refuel Meal (₦1,350 in 2025) is the benchmark for what a single home-cooked meal should cost. Beat it by cooking a full pot!',
+
   '🌽 Roasted corn is cheapest June–September (harvest season). A cob on the street: ₦400–800 in 2025.',
   '🍠 One yam tuber costs ₦6,000 in 2025. Cut into thirds: Breakfast is asaro, lunch is yam and egg, dinner is pottage — three meals, one tuber.',
   '🥚 A crate of 30 eggs is ₦3,800 in 2025 (≈₦127 per egg). Eggs are your most affordable complete protein — use them daily.',
@@ -1449,7 +1449,7 @@ function openMealDetail(id) {
   const recipe = RECIPES.find(r => r.mealId === id);
   const isFav = state.favourites.has(id);
 
-  const crRef = meal.note ? `<div style="background:rgba(14,122,61,0.08);border-radius:8px;padding:10px 12px;font-size:0.8rem;color:var(--green);margin-bottom:14px;border-left:3px solid var(--green)">💡 ${meal.note}</div>` : '';
+  const mealNote = meal.note ? `<div style="background:rgba(14,122,61,0.08);border-radius:8px;padding:10px 12px;font-size:0.8rem;color:var(--green);margin-bottom:14px;border-left:3px solid var(--green)">💡 ${meal.note}</div>` : '';
 
   const stepsHTML = recipe ? `<div class="modal-section"><h4>Method (${recipe.cookTime} min)</h4><ol class="modal-step-list">${recipe.steps.map(s=>`<li>${s}</li>`).join('')}</ol></div>` : '';
 
@@ -1464,7 +1464,6 @@ function openMealDetail(id) {
         ${meal.servings > 1 ? `<span class="modal-tag tag-purple">${fmt(Math.round(meal.cost/meal.servings))} per person</span>` : ''}
       </div>
     </div>
-    ${crRef}
     <div class="modal-section">
       <h4>Ingredients</h4>
       <ul class="modal-ingredient-list">${meal.ingredients.map(i=>`<li>${capitalize(i)}</li>`).join('')}</ul>
@@ -1601,7 +1600,7 @@ function runBudgetEstimate() {
   const DAILY_PER_CHILD = { economy: 900, standard: 1500, premium: 2500 };
 
   const tiers = ['economy', 'standard', 'premium'];
-  const labels = { economy: '💚 Budget-Friendly (Market cooking)', standard: '🟡 Standard (Mix of home + occasional CR)', premium: '💜 Premium (Quality ingredients + dining out)' };
+  const labels = { economy: '💚 Budget-Friendly (Market cooking)', standard: '🟡 Standard (Mix of home cooking + occasional dining out)', premium: '💜 Premium (Quality ingredients + dining out)' };
 
   const results = tiers.map(tier => {
     const daily = (adults * DAILY_PER_ADULT[tier]) + (children * DAILY_PER_CHILD[tier]);
@@ -1610,9 +1609,6 @@ function runBudgetEstimate() {
     return { tier, label: labels[tier], daily, total, weekly };
   });
 
-  const crRef = `<div style="background:rgba(14,122,61,0.08);border-radius:8px;padding:10px;font-size:0.78rem;color:var(--green);margin-top:12px;border-left:3px solid var(--green)">
-    🍗 <strong>Chicken Republic reference:</strong> Refuel Meal ₦900 · Citizens Meal (2pc) ₦2,000 · Pot Lovers (family) ₦9,000
-  </div>`;
 
   const html = `
     <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:12px">For ${adults} adult${adults>1?'s':''} + ${children} child${children!==1?'ren':''}, ${days} days — 2025 prices:</p>
@@ -1624,7 +1620,6 @@ function runBudgetEstimate() {
         </div>
         <div class="budget-tier-amount">${fmt(r.total)}</div>
       </div>`).join('')}
-    ${crRef}
     <p style="font-size:0.72rem;color:var(--text-muted);margin-top:10px">* Based on Lagos/Abuja 2025 market prices. Source: SBM Intelligence, Nigerian market data.</p>`;
 
   document.getElementById('budgetEstimateResults').innerHTML = html;
