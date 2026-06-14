@@ -232,12 +232,12 @@ const MEALS = [
     ingredients:['flour (2 cups)','eggs (2)','milk','sugar','baking powder','butter','vegetable oil','vanilla extract'] },
 
   { id:28, name:'Fried Plantain and Egg', category:'Breakfast', emoji:'🍌',
-    img: IMAGES.fried_plantain_egg, cost:2800, servings:2,
+    img: IMAGES.fried_plantain, cost:2800, servings:2,
     note:'Ripe plantain: ₦500–800 each in 2025. Dodo + eggs = a full meal',
     ingredients:['ripe plantain (2)','eggs (3)','tomato','scotch bonnet pepper','onion','vegetable oil'] },
 
   { id:29, name:'Boiled Plantain and Egg Sauce', category:'Breakfast', emoji:'🍌',
-    img: IMAGES.boiled_plantain_egg, cost:2500, servings:2,
+    img: IMAGES.boiled_plantain, cost:2500, servings:2,
     note:'Lighter alternative to fried dodo — boil until soft and serve with sauce',
     ingredients:['unripe or half-ripe plantain (2)','eggs (3)','tomatoes','peppers','onion','vegetable oil','seasoning'] },
 
@@ -246,7 +246,7 @@ const MEALS = [
     note:'Add ripe plantain for natural sweetness. Very nutritious and filling',
     ingredients:['brown beans (2 cups)','palm oil','peppers','onion','ground crayfish','seasoning cubes','ripe plantain (2)'] },
 
-  { id:31, name:'Yam Pottage', category:'Breakfast', emoji:'🍠',
+  { id:31, name:'Yam Pottage (Asaro)', category:'Breakfast', emoji:'🍠',
     img: IMAGES.yam_pottage, cost:5000, servings:4,
     note:'One-pot meal — yam + palm oil + spinach. Comforting and complete',
     ingredients:['yam (½ tuber)','palm oil','peppers','onion','ground crayfish','fresh spinach','seasoning cubes'] },
@@ -347,7 +347,7 @@ const RECIPES = [
   },
   {
     id:3, mealId:20, name:'Akara (Bean Cakes)', emoji:'🫓', category:'Breakfast',
-    img: IMAGES.akara,
+    img: IMAGES.akara_pap,
     cookTime:30, servings:5, cost:2500,
     ingredients:['2 cups black-eyed beans — peeled (₦1,800)','1 medium onion (₦200)','2 scotch bonnet peppers','1 tsp salt','Vegetable oil for deep frying (₦500)'],
     steps:[
@@ -421,7 +421,7 @@ const RECIPES = [
     ]
   },
   {
-    id:8, mealId:5, name:'Rice and Beans', emoji:'🫘', category:'Rice',
+    id:8, mealId:5, name:'Rice and Beans (Olele)', emoji:'🫘', category:'Rice',
     img: IMAGES.rice_beans,
     cookTime:60, servings:4, cost:4500,
     ingredients:['500g long grain rice (₦1,200)','500g honey beans oloyin (₦1,100)','2 tbsp palm oil (₦500)','2 scotch bonnet peppers','1 large onion (₦200)','1 seasoning cube','Salt to taste'],
@@ -436,7 +436,7 @@ const RECIPES = [
   },
   {
     id:9, mealId:30, name:'Beans Porridge with Plantain', emoji:'🫘', category:'Breakfast',
-    img: IMAGES.beans_porridge_fried_plantain,
+    img: IMAGES.beans_porridge,
     cookTime:50, servings:4, cost:4000,
     ingredients:['2 cups brown beans (₦2,200)','2 tbsp palm oil (₦500)','2 ripe plantains (₦1,000)','2 scotch bonnet peppers','1 large onion (₦200)','2 tbsp ground crayfish (₦600)','2 seasoning cubes','Salt to taste','Smoked fish optional (₦800)'],
     steps:[
@@ -481,7 +481,7 @@ const RECIPES = [
   },
   {
     id:12, mealId:9, name:'Afang Soup', emoji:'🌱', category:'Soups',
-    img: IMAGES.afang_soup,
+    img: IMAGES.vegetable_soup,
     cookTime:50, servings:5, cost:13000,
     ingredients:['400g afang leaves sliced thin (₦3,500)','400g waterleaf (₦1,000)','400g assorted meat (₦4,000)','200g periwinkle (₦1,500)','3 tbsp palm oil (₦750)','3 tbsp ground crayfish (₦1,000)','Stockfish and smoked fish (₦1,500)','Seasoning cubes, peppers, salt'],
     steps:[
@@ -539,7 +539,7 @@ const RECIPES = [
   },
   {
     id:16, mealId:6, name:'Ofada Rice and Ayamase Stew', emoji:'🌿', category:'Rice',
-    img: IMAGES.ofada_rice_ayamase,
+    img: IMAGES.jollof_rice,
     cookTime:60, servings:3, cost:9500,
     ingredients:['1kg ofada rice (₦3,500)','400g assorted meat (₦4,000)','3 red bell peppers (₦900)','5 tatashe peppers','5 scotch bonnet peppers','3 tbsp palm oil (₦750)','3 tbsp locust beans (₦600)','Seasoning, crayfish, salt'],
     steps:[
@@ -614,7 +614,7 @@ const RECIPES = [
   },
   {
     id:21, mealId:28, name:'Fried Plantain and Egg', emoji:'🍌', category:'Breakfast',
-    img: IMAGES.fried_plantain_egg,
+    img: IMAGES.fried_plantain,
     cookTime:20, servings:2, cost:2800,
     ingredients:['2 ripe plantains (₦1,000)','3 eggs (₦380)','1 tomato (₦300)','1 pepper','1 small onion (₦150)','2 tbsp vegetable oil (₦200)','Salt to taste'],
     steps:[
@@ -627,7 +627,7 @@ const RECIPES = [
   },
   {
     id:22, mealId:29, name:'Boiled Plantain and Egg Sauce', emoji:'🍌', category:'Breakfast',
-    img: IMAGES.boiled_plantain_eggsauce,
+    img: IMAGES.boiled_plantain,
     cookTime:20, servings:2, cost:2500,
     ingredients:['2 unripe or half-ripe plantains (₦800)','3 eggs (₦380)','1 tomato (₦300)','1 pepper','1 small onion (₦150)','2 tbsp vegetable oil (₦200)','Seasoning, salt'],
     steps:[
@@ -639,7 +639,7 @@ const RECIPES = [
   },
   {
     id:23, mealId:14, name:'Amala and Ewedu', emoji:'🌿', category:'Swallows',
-    img: IMAGES.amala_ewedu,
+    img: IMAGES.pounded_yam,
     cookTime:30, servings:3, cost:7000,
     ingredients:['2 cups plantain flour elubo (₦2,000)','3 cups water for amala','300g jute leaves ewedu (₦800)','2 tbsp palm oil (₦500)','1 tbsp ground crayfish (₦500)','Beef stew and gbegiri (₦2,500)','Seasoning, salt'],
     steps:[
@@ -711,7 +711,7 @@ const RECIPES = [
   },
   {
     id:28, mealId:14, name:'Pounded Yam and Egusi', emoji:'🍠', category:'Swallows',
-    img: IMAGES.pounded_yam_egusi,
+    img: IMAGES.pounded_yam,
     cookTime:60, servings:3, cost:10500,
     ingredients:['1 tuber yam (₦6,000)','300g ground egusi (₦2,700)','Assorted meat 300g (₦3,000)','3 tbsp palm oil (₦750)','Crayfish, peppers, seasoning (₦1,200)'],
     steps:[
