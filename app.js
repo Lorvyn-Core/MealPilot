@@ -6,6 +6,291 @@
 
 'use strict';
 
+/* =============================================
+   MEALPILOT — Supabase Auth Module
+   Project URL: https://golkwvdeuryujwfwazrf.supabase.co
+   ============================================= */
+
+// ─────────────────────────────────────────────
+//  SUPABASE CONFIG
+// ─────────────────────────────────────────────
+const SUPABASE_URL = 'https://golkwvdeuryujwfwazrf.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_7iB7pbrIvwl6bq848Lrpgw_7BSbm7MR';
+
+// Initialise client — supabase-js is loaded via CDN in index.html
+const _supabase = window.supabase
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+
+// Auth state (populated on page load + on auth change)
+let authState = {
+  user:    null,   // Supabase user object
+  profile: null,   // Row from public.profiles { id, email, is_paid }
+  loading: true,
+};
+
+// ─────────────────────────────────────────────
+//  FETCH USER PROFILE from profiles table
+// ─────────────────────────────────────────────
+async function fetchProfile(userId) {
+  if (!_supabase) return null;
+  try {
+    const { data, error } = await _supabase
+      .from('profiles')
+      .select('id, email, is_paid')
+      .eq('id', userId)
+      .single();
+    if (error) {
+      // Row may not exist yet — create it
+      if (error.code === 'PGRST116') {
+        const { data: inserted } = await _supabase
+          .from('profiles')
+          .insert({ id: userId, email: authState.user?.email, is_paid: false })
+          .select()
+          .single();
+        return inserted || null;
+      }
+      console.error('Profile fetch error:', error.message);
+      return null;
+    }
+    return data;
+  } catch(e) {
+    console.error('fetchProfile exception:', e);
+    return null;
+  }
+}
+
+// ─────────────────────────────────────────────
+//  AUTH UI HELPERS
+// ─────────────────────────────────────────────
+function updateAuthUI() {
+  const { user, profile } = authState;
+  const headerBtn   = document.getElementById('authHeaderBtn');
+  const avatarIcon  = document.getElementById('authAvatarIcon');
+  const headerLabel = document.getElementById('authHeaderLabel');
+
+  if (!headerBtn) return;
+
+  if (user) {
+    const initial = (user.email || 'U')[0].toUpperCase();
+    avatarIcon.textContent = initial;
+    const isPaid = profile?.is_paid === true;
+    headerLabel.innerHTML = isPaid
+      ? `${initial} <span class="paid-badge">PRO</span>`
+      : initial;
+
+    // Dropdown
+    const dropEmail  = document.getElementById('dropdownEmail');
+    const dropStatus = document.getElementById('dropdownStatus');
+    if (dropEmail)  dropEmail.textContent = user.email;
+    if (dropStatus) dropStatus.innerHTML  = isPaid
+      ? '<span style="color:var(--green)">✅ Premium access</span>'
+      : '<span style="color:var(--text-muted)">🔒 Free account</span>';
+  } else {
+    avatarIcon.textContent = '?';
+    headerLabel.textContent = 'Sign In';
+  }
+
+  // Update healthy feature gating
+  renderHealthyGate();
+}
+
+// ─────────────────────────────────────────────
+//  HEALTHY FEATURE GATE (paywall logic)
+// ─────────────────────────────────────────────
+function renderHealthyGate() {
+  const healthySec    = document.getElementById('healthyRecipeSection');
+  const paywallDiv    = document.getElementById('healthyPaywall');
+  const dietBar       = document.getElementById('dietFilterBar');
+  const recipeGrid    = document.getElementById('healthyRecipeGrid');
+
+  if (!healthySec || !paywallDiv) return;
+
+  const isPaid = authState.profile?.is_paid === true;
+  const isLoggedIn = !!authState.user;
+
+  if (isPaid) {
+    // Full access
+    paywallDiv.classList.add('hidden');
+    dietBar.classList.remove('hidden');
+    recipeGrid.classList.remove('hidden');
+    renderHealthyRecipes();
+  } else {
+    // Show paywall
+    paywallDiv.classList.remove('hidden');
+    dietBar.classList.add('hidden');
+    recipeGrid.classList.add('hidden');
+
+    // Update paywall button text
+    const paywallBtn = document.getElementById('paywallSignInBtn');
+    if (paywallBtn) {
+      paywallBtn.textContent = isLoggedIn
+        ? '✉️ Contact Admin for Access'
+        : 'Sign In to Check Access';
+    }
+  }
+}
+
+// ─────────────────────────────────────────────
+//  AUTH MODAL LOGIC
+// ─────────────────────────────────────────────
+let authMode = 'login'; // 'login' | 'signup'
+
+function openAuthModal() {
+  document.getElementById('authOverlay').classList.remove('hidden');
+  document.getElementById('authEmail').focus();
+  clearAuthMessages();
+}
+function closeAuthModal() {
+  document.getElementById('authOverlay').classList.add('hidden');
+  clearAuthMessages();
+}
+function clearAuthMessages() {
+  document.getElementById('authError').classList.add('hidden');
+  document.getElementById('authSuccess').classList.add('hidden');
+}
+function showAuthError(msg) {
+  const el = document.getElementById('authError');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+function showAuthSuccess(msg) {
+  const el = document.getElementById('authSuccess');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+async function handleAuthSubmit() {
+  if (!_supabase) { showAuthError('Auth not available'); return; }
+  const email    = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const btn      = document.getElementById('authSubmitBtn');
+
+  if (!email || !password) { showAuthError('Please enter email and password.'); return; }
+  if (password.length < 6) { showAuthError('Password must be at least 6 characters.'); return; }
+
+  btn.disabled = true;
+  btn.textContent = authMode === 'login' ? 'Signing in…' : 'Creating account…';
+  clearAuthMessages();
+
+  try {
+    if (authMode === 'login') {
+      const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      // onAuthStateChange handles the rest
+      closeAuthModal();
+      showToast('Welcome back! ✓', 'success');
+    } else {
+      const { data, error } = await _supabase.auth.signUp({ email, password });
+      if (error) throw error;
+      showAuthSuccess('Account created! Check your email to confirm, then sign in.');
+    }
+  } catch(err) {
+    showAuthError(err.message || 'Something went wrong. Please try again.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = authMode === 'login' ? 'Sign In' : 'Create Account';
+  }
+}
+
+async function handleSignOut() {
+  if (!_supabase) return;
+  await _supabase.auth.signOut();
+  authState.user    = null;
+  authState.profile = null;
+  updateAuthUI();
+  document.getElementById('userDropdown').classList.add('hidden');
+  showToast('Signed out', 'success');
+}
+
+// ─────────────────────────────────────────────
+//  INIT AUTH (called inside main init())
+// ─────────────────────────────────────────────
+async function initAuth() {
+  if (!_supabase) {
+    authState.loading = false;
+    updateAuthUI();
+    return;
+  }
+
+  // Wire up auth modal tabs
+  document.getElementById('loginTab').addEventListener('click', () => {
+    authMode = 'login';
+    document.getElementById('loginTab').classList.add('active');
+    document.getElementById('signupTab').classList.remove('active');
+    document.getElementById('authSubmitBtn').textContent = 'Sign In';
+    document.getElementById('authPassword').setAttribute('autocomplete','current-password');
+    clearAuthMessages();
+  });
+  document.getElementById('signupTab').addEventListener('click', () => {
+    authMode = 'signup';
+    document.getElementById('signupTab').classList.add('active');
+    document.getElementById('loginTab').classList.remove('active');
+    document.getElementById('authSubmitBtn').textContent = 'Create Account';
+    document.getElementById('authPassword').setAttribute('autocomplete','new-password');
+    clearAuthMessages();
+  });
+  document.getElementById('authSubmitBtn').addEventListener('click', handleAuthSubmit);
+  document.getElementById('authPassword').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleAuthSubmit();
+  });
+  document.getElementById('authClose').addEventListener('click', closeAuthModal);
+  document.getElementById('authSkipBtn').addEventListener('click', closeAuthModal);
+  document.getElementById('authOverlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('authOverlay')) closeAuthModal();
+  });
+
+  // Header auth button — sign in or open dropdown
+  document.getElementById('authHeaderBtn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (authState.user) {
+      const dd = document.getElementById('userDropdown');
+      dd.classList.toggle('hidden');
+    } else {
+      openAuthModal();
+    }
+  });
+
+  // Close dropdown on outside click
+  document.addEventListener('click', () => {
+    document.getElementById('userDropdown')?.classList.add('hidden');
+  });
+
+  // Dropdown sign out
+  document.getElementById('dropdownSignOut').addEventListener('click', handleSignOut);
+
+  // Paywall sign-in button
+  document.getElementById('paywallSignInBtn')?.addEventListener('click', () => {
+    if (authState.user) {
+      showToast('Contact admin to upgrade your account', 'error');
+    } else {
+      openAuthModal();
+    }
+  });
+
+  // Listen for auth state changes (login, logout, token refresh)
+  _supabase.auth.onAuthStateChange(async (event, session) => {
+    if (session?.user) {
+      authState.user    = session.user;
+      authState.profile = await fetchProfile(session.user.id);
+    } else {
+      authState.user    = null;
+      authState.profile = null;
+    }
+    authState.loading = false;
+    updateAuthUI();
+  });
+
+  // Check existing session
+  const { data: { session } } = await _supabase.auth.getSession();
+  if (session?.user) {
+    authState.user    = session.user;
+    authState.profile = await fetchProfile(session.user.id);
+  }
+  authState.loading = false;
+  updateAuthUI();
+}
+
 // ─────────────────────────────────────────────
 //  CHICKEN REPUBLIC 2025 PRICE REFERENCE
 //  Source: topinfo.ng / chicken-republic.com (July 2025)
@@ -828,13 +1113,20 @@ let state = {
   darkMode: false,
   tipIndex: 0,
   recentRecipes: [],
+  savedShoppingPlans: [],   // Feature 1: saved market shopping plans
+  dietFilter: 'all',        // Feature 2: active diet filter
 };
 
 // ─────────────────────────────────────────────
 //  LOCAL STORAGE
 // ─────────────────────────────────────────────
 function saveState() {
-  const toSave = { plan: state.plan, favourites: [...state.favourites], expenses: state.expenses, monthlyBudgetGoal: state.monthlyBudgetGoal, darkMode: state.darkMode, tipIndex: state.tipIndex, recentRecipes: state.recentRecipes };
+  const toSave = {
+    plan: state.plan, favourites: [...state.favourites], expenses: state.expenses,
+    monthlyBudgetGoal: state.monthlyBudgetGoal, darkMode: state.darkMode,
+    tipIndex: state.tipIndex, recentRecipes: state.recentRecipes,
+    savedShoppingPlans: state.savedShoppingPlans, dietFilter: state.dietFilter,
+  };
   localStorage.setItem('mealpilot_v2', JSON.stringify(toSave));
 }
 
@@ -850,6 +1142,8 @@ function loadState() {
     state.darkMode = saved.darkMode || false;
     state.tipIndex = saved.tipIndex || 0;
     state.recentRecipes = saved.recentRecipes || [];
+    state.savedShoppingPlans = saved.savedShoppingPlans || [];
+    state.dietFilter = saved.dietFilter || 'all';
   } catch(e) {}
 }
 
@@ -1175,6 +1469,7 @@ function openMealDetail(id) {
     </div>
     <div class="modal-actions">
       <button class="btn btn-sm ${isFav ? 'btn-orange' : 'btn-outline'}" id="favToggleBtn">${isFav ? '⭐ Saved' : '☆ Save'}</button>
+      ${HEALTHY_SWAPS[id] ? '<button class="btn btn-sm" style="background:var(--green);color:#fff" id="healthyVersionBtn">🥗 Healthy Version</button>' : ''}
     </div>`;
 
   openModal(html);
@@ -1194,6 +1489,10 @@ function openMealDetail(id) {
 
   state.recentRecipes = [id, ...state.recentRecipes.filter(x=>x!==id)].slice(0,5);
   saveState();
+
+  // Wire up Healthy Version button if present
+  const hvBtn = document.getElementById('healthyVersionBtn');
+  if (hvBtn) hvBtn.addEventListener('click', () => openHealthyVersion(id));
 }
 
 // ─────────────────────────────────────────────
@@ -1225,6 +1524,20 @@ function renderRecipeCards(recipes) {
 function filterRecipeCards() {
   const q = document.getElementById('recipeSearchInput').value.toLowerCase();
   const cat = document.querySelector('#recipeCategoryFilter .chip.active')?.dataset.cat || 'all';
+
+  // If 'Healthy & Diet' tab is active, delegate to renderHealthyRecipes
+  if (cat === 'Healthy & Diet') {
+    document.getElementById('recipeCardsGrid').classList.add('hidden');
+    const healthySec = document.getElementById('healthyRecipeSection');
+    if (healthySec) healthySec.classList.remove('hidden');
+    return;
+  }
+
+  // Show normal recipe grid, hide healthy section
+  document.getElementById('recipeCardsGrid').classList.remove('hidden');
+  const healthySec = document.getElementById('healthyRecipeSection');
+  if (healthySec) healthySec.classList.add('hidden');
+
   let recipes = RECIPES;
   if (cat !== 'all') recipes = recipes.filter(r => r.category === cat);
   if (q) recipes = recipes.filter(r => r.name.toLowerCase().includes(q));
@@ -1520,7 +1833,7 @@ function navigate(sectionId) {
   if (navBtn) navBtn.classList.add('active');
   if (sectionId==='planner') renderPlanner();
   if (sectionId==='explore') filterMealCards();
-  if (sectionId==='recipes') filterRecipeCards();
+  if (sectionId==='recipes') { filterRecipeCards(); renderHealthyRecipes(); renderHealthyGate(); }
   if (sectionId==='tracker') renderTracker();
   window.scrollTo(0,0);
 }
@@ -1531,6 +1844,7 @@ function navigate(sectionId) {
 function init() {
   loadState();
   initPlan();
+  initAuth(); // Supabase auth — runs async, updates UI when ready
 
   setTimeout(() => {
     document.getElementById('splash').classList.add('fade-out');
@@ -1538,6 +1852,8 @@ function init() {
     renderPlanner();
     renderMealCards(MEALS);
     renderRecipeCards(RECIPES);
+    renderHealthyRecipes();
+    renderMarketPlanner();
     renderTracker();
     renderTip();
   }, 1600);
@@ -1581,6 +1897,23 @@ function init() {
   document.getElementById('addExpenseBtn').addEventListener('click', addExpense);
   document.getElementById('nextTipBtn').addEventListener('click', () => { state.tipIndex++; saveState(); renderTip(); });
 
+  // Feature 1: Market Planner
+  const calcMarketBtn = document.getElementById('calculateMarketBtn');
+  if (calcMarketBtn) calcMarketBtn.addEventListener('click', calculateMarketBudget);
+  const marketBudgetInput = document.getElementById('marketBudgetInput');
+  if (marketBudgetInput) marketBudgetInput.addEventListener('input', renderMarketPlanner);
+
+  // Feature 2: Healthy recipe diet filters
+  document.querySelectorAll('#dietFilterBar .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('#dietFilterBar .chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      state.dietFilter = chip.dataset.diet;
+      saveState();
+      renderHealthyRecipes();
+    });
+  });
+
   document.getElementById('modalClose').addEventListener('click', closeModal);
   document.getElementById('shoppingClose').addEventListener('click', closeShoppingModal);
   document.getElementById('modalOverlay').addEventListener('click', e=>{ if(e.target===document.getElementById('modalOverlay')) closeModal(); });
@@ -1593,3 +1926,644 @@ window.copyShoppingList = copyShoppingList;
 window.downloadShoppingList = downloadShoppingList;
 
 document.addEventListener('DOMContentLoaded', init);
+
+// ═══════════════════════════════════════════════════════════════
+//  FEATURE 1: "WHAT CAN I BUY WITH?" — Nigerian Market Planner
+// ═══════════════════════════════════════════════════════════════
+
+// Nigerian market unit prices (2025 averages, Lagos/Abuja)
+const MARKET_ITEMS = [
+  { name:'Tomatoes',       emoji:'🍅', unitPrice:1000, unit:'basket/cup',  priority:'high',   category:'Vegetables' },
+  { name:'Pepper',         emoji:'🌶️', unitPrice:500,  unit:'cup',         priority:'high',   category:'Vegetables' },
+  { name:'Onion',          emoji:'🧅', unitPrice:500,  unit:'medium bag',  priority:'high',   category:'Vegetables' },
+  { name:'Rice',           emoji:'🍚', unitPrice:2400, unit:'1kg',         priority:'high',   category:'Grains' },
+  { name:'Garri',          emoji:'🥣', unitPrice:1500, unit:'1kg',         priority:'high',   category:'Grains' },
+  { name:'Beans',          emoji:'🫘', unitPrice:2200, unit:'1kg',         priority:'high',   category:'Grains' },
+  { name:'Yam',            emoji:'🍠', unitPrice:3000, unit:'½ tuber',     priority:'medium', category:'Grains' },
+  { name:'Plantain',       emoji:'🍌', unitPrice:1000, unit:'bunch (2–3)', priority:'medium', category:'Grains' },
+  { name:'Bread',          emoji:'🍞', unitPrice:1200, unit:'loaf',        priority:'medium', category:'Grains' },
+  { name:'Indomie',        emoji:'🍜', unitPrice:250,  unit:'pack',        priority:'low',    category:'Grains' },
+  { name:'Spaghetti',      emoji:'🍝', unitPrice:700,  unit:'500g',        priority:'low',    category:'Grains' },
+  { name:'Chicken',        emoji:'🍗', unitPrice:4800, unit:'1kg',         priority:'medium', category:'Proteins' },
+  { name:'Beef',           emoji:'🥩', unitPrice:5500, unit:'1kg',         priority:'medium', category:'Proteins' },
+  { name:'Goat Meat',      emoji:'🍖', unitPrice:6500, unit:'1kg',         priority:'low',    category:'Proteins' },
+  { name:'Fish (Tilapia)', emoji:'🐟', unitPrice:3000, unit:'medium fish', priority:'medium', category:'Proteins' },
+  { name:'Catfish',        emoji:'🐠', unitPrice:6000, unit:'1kg',         priority:'low',    category:'Proteins' },
+  { name:'Eggs',           emoji:'🥚', unitPrice:1900, unit:'½ crate(15)', priority:'high',   category:'Proteins' },
+  { name:'Smoked Fish',    emoji:'🐡', unitPrice:1500, unit:'medium',      priority:'medium', category:'Proteins' },
+  { name:'Stockfish',      emoji:'🦴', unitPrice:1500, unit:'medium',      priority:'medium', category:'Proteins' },
+  { name:'Turkey',         emoji:'🦃', unitPrice:6000, unit:'½kg',         priority:'low',    category:'Proteins' },
+  { name:'Cabbage',        emoji:'🥬', unitPrice:800,  unit:'small head',  priority:'medium', category:'Vegetables' },
+  { name:'Carrots',        emoji:'🥕', unitPrice:600,  unit:'3 medium',    priority:'medium', category:'Vegetables' },
+  { name:'Garden Egg',     emoji:'🍆', unitPrice:500,  unit:'bunch',       priority:'low',    category:'Vegetables' },
+  { name:'Spinach/Tete',   emoji:'🌿', unitPrice:400,  unit:'bunch',       priority:'medium', category:'Vegetables' },
+  { name:'Ugwu',           emoji:'🌱', unitPrice:400,  unit:'bunch',       priority:'medium', category:'Vegetables' },
+  { name:'Okra',           emoji:'🫑', unitPrice:600,  unit:'250g',        priority:'medium', category:'Vegetables' },
+  { name:'Pumpkin Leaf',   emoji:'🍃', unitPrice:300,  unit:'bunch',       priority:'low',    category:'Vegetables' },
+  { name:'Palm Oil',       emoji:'🫙', unitPrice:2500, unit:'1 litre',     priority:'high',   category:'Oils' },
+  { name:'Vegetable Oil',  emoji:'🛢️', unitPrice:2000, unit:'1 litre',     priority:'high',   category:'Oils' },
+  { name:'Ground Crayfish',emoji:'🦐', unitPrice:1500, unit:'small cup',   priority:'medium', category:'Seasonings' },
+  { name:'Seasoning Cubes',emoji:'🧂', unitPrice:500,  unit:'pack of 12',  priority:'high',   category:'Seasonings' },
+  { name:'Egusi',          emoji:'🥜', unitPrice:4500, unit:'500g',        priority:'medium', category:'Seasonings' },
+  { name:'Ogbono',         emoji:'🌰', unitPrice:4000, unit:'200g',        priority:'low',    category:'Seasonings' },
+  { name:'Locust Beans',   emoji:'🫘', unitPrice:600,  unit:'sachet',      priority:'low',    category:'Seasonings' },
+  { name:'Milk (Tin)',     emoji:'🥛', unitPrice:800,  unit:'tin',         priority:'low',    category:'Others' },
+  { name:'Sugar',          emoji:'🍬', unitPrice:1000, unit:'500g',        priority:'medium', category:'Others' },
+  { name:'Salt',           emoji:'🧂', unitPrice:200,  unit:'sachet',      priority:'high',   category:'Others' },
+  { name:'Coconut Milk',   emoji:'🥥', unitPrice:2000, unit:'tin',         priority:'low',    category:'Others' },
+];
+
+// Shopping cart state (session only — not persisted to keep it lightweight)
+let marketCart = [];
+
+function renderMarketPlanner() {
+  const totalBudget = Number(document.getElementById('marketBudgetInput').value) || 0;
+
+  // Group items by category for the picker grid
+  const categories = [...new Set(MARKET_ITEMS.map(i => i.category))];
+
+  const pickerHTML = categories.map(cat => `
+    <div class="market-cat-group">
+      <div class="market-cat-label">${cat}</div>
+      <div class="market-item-grid">
+        ${MARKET_ITEMS.filter(i => i.category === cat).map(item => {
+          const inCart = marketCart.find(c => c.name === item.name);
+          return `
+            <div class="market-item-chip ${inCart ? 'selected' : ''}" data-name="${item.name}">
+              <span>${item.emoji}</span>
+              <span>${item.name}</span>
+              ${inCart ? '<span class="chip-check">✓</span>' : ''}
+            </div>`;
+        }).join('')}
+      </div>
+    </div>`).join('');
+
+  document.getElementById('marketItemPicker').innerHTML = pickerHTML;
+
+  // Bind click events
+  document.querySelectorAll('.market-item-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const name = chip.dataset.name;
+      const item = MARKET_ITEMS.find(i => i.name === name);
+      const idx = marketCart.findIndex(c => c.name === name);
+      if (idx >= 0) {
+        marketCart.splice(idx, 1);
+      } else {
+        marketCart.push({ ...item, userPriority: item.priority });
+      }
+      renderMarketPlanner();
+    });
+  });
+
+  // Render cart with priority controls
+  const cartEl = document.getElementById('marketCart');
+  if (!marketCart.length) {
+    cartEl.innerHTML = `<p style="color:var(--text-muted);font-size:0.82rem;text-align:center;padding:12px">Tap items above to add them to your list</p>`;
+  } else {
+    cartEl.innerHTML = `
+      <div class="market-cart-list">
+        ${marketCart.map(item => `
+          <div class="market-cart-row">
+            <span class="market-cart-emoji">${item.emoji}</span>
+            <span class="market-cart-name">${item.name}</span>
+            <select class="market-priority-select" data-name="${item.name}">
+              <option value="high"   ${item.userPriority==='high'   ? 'selected':''}>🔴 High</option>
+              <option value="medium" ${item.userPriority==='medium' ? 'selected':''}>🟡 Medium</option>
+              <option value="low"    ${item.userPriority==='low'    ? 'selected':''}>🟢 Optional</option>
+            </select>
+            <button class="market-remove-btn" data-name="${item.name}">✕</button>
+          </div>`).join('')}
+      </div>`;
+
+    cartEl.querySelectorAll('.market-priority-select').forEach(sel => {
+      sel.addEventListener('change', () => {
+        const item = marketCart.find(c => c.name === sel.dataset.name);
+        if (item) { item.userPriority = sel.value; }
+      });
+    });
+    cartEl.querySelectorAll('.market-remove-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        marketCart = marketCart.filter(c => c.name !== btn.dataset.name);
+        renderMarketPlanner();
+      });
+    });
+  }
+}
+
+function calculateMarketBudget() {
+  const budget = Number(document.getElementById('marketBudgetInput').value);
+  if (!budget || budget < 200) { showToast('Enter a budget amount (min ₦200)'); return; }
+  if (!marketCart.length) { showToast('Add at least one item to your list'); return; }
+
+  // Sort: high priority first, then medium, then optional
+  const priorityOrder = { high: 0, medium: 1, low: 2 };
+  const sorted = [...marketCart].sort((a,b) => priorityOrder[a.userPriority] - priorityOrder[b.userPriority]);
+
+  let remaining = budget;
+  const included = [];
+  const excluded = [];
+
+  // Greedy allocation: fit items in priority order
+  for (const item of sorted) {
+    if (remaining >= item.unitPrice) {
+      included.push({ ...item, allocated: item.unitPrice });
+      remaining -= item.unitPrice;
+    } else if (remaining > 0 && item.userPriority === 'high') {
+      // Partial entry for high-priority items we can't fully afford
+      included.push({ ...item, allocated: remaining, partial: true });
+      remaining = 0;
+    } else {
+      excluded.push(item);
+    }
+  }
+
+  const totalSpent = budget - remaining;
+  const pct = Math.min(100, Math.round((totalSpent / budget) * 100));
+
+  // Build breakdown bars
+  const catTotals = {};
+  included.forEach(i => { catTotals[i.category] = (catTotals[i.category] || 0) + i.allocated; });
+  const maxCat = Math.max(...Object.values(catTotals), 1);
+
+  const html = `
+    <div class="market-result-header">
+      <div class="market-result-budget">Budget: <strong>${fmt(budget)}</strong></div>
+      <div class="market-result-spent">Spending: <strong>${fmt(totalSpent)}</strong></div>
+      <div class="market-result-remaining ${remaining > 0 ? 'positive' : 'zero'}">Remaining: <strong>${fmt(remaining)}</strong></div>
+    </div>
+
+    <div class="market-progress-wrap">
+      <div class="market-progress-bar">
+        <div class="market-progress-fill" style="width:${pct}%"></div>
+      </div>
+      <div class="market-progress-label">${pct}% of budget allocated</div>
+    </div>
+
+    <h4 style="margin:14px 0 8px;font-size:0.88rem">✅ Recommended Shopping Plan</h4>
+    <div class="market-plan-list">
+      ${included.map(item => {
+        const itemPct = Math.round((item.allocated / budget) * 100);
+        return `
+          <div class="market-plan-row">
+            <span class="market-plan-emoji">${item.emoji}</span>
+            <div class="market-plan-info">
+              <span class="market-plan-name">${item.name}${item.partial ? ' <span class="partial-tag">partial</span>':''}</span>
+              <span class="market-plan-unit">${item.unit}</span>
+            </div>
+            <div class="market-plan-right">
+              <span class="market-plan-price">${fmt(item.allocated)}</span>
+              <div class="market-plan-bar-wrap">
+                <div class="market-plan-bar" style="width:${itemPct}%"></div>
+              </div>
+              <span class="market-plan-pct">${itemPct}%</span>
+            </div>
+          </div>`;
+      }).join('')}
+    </div>
+
+    ${excluded.length ? `
+      <div class="market-excluded">
+        <h4 style="font-size:0.82rem;margin-bottom:6px;color:var(--orange-dark)">⚠️ Budget too small for these items:</h4>
+        ${excluded.map(i => `<span class="market-excluded-chip">${i.emoji} ${i.name} (${fmt(i.unitPrice)})</span>`).join('')}
+      </div>` : ''}
+
+    <div class="market-cat-breakdown">
+      <h4 style="font-size:0.82rem;margin-bottom:8px">📊 Category Breakdown</h4>
+      ${Object.entries(catTotals).map(([cat, val]) => `
+        <div class="mini-bar-row">
+          <span class="mini-bar-label">${cat}</span>
+          <div class="mini-bar-track"><div class="mini-bar-fill" style="width:${Math.round((val/maxCat)*100)}%"></div></div>
+          <span class="mini-bar-val">${fmt(val)}</span>
+        </div>`).join('')}
+    </div>
+
+    <div class="market-plan-actions">
+      <button class="btn btn-sm btn-primary" onclick="saveMarketPlan(${budget})">💾 Save Plan</button>
+      <button class="btn btn-sm btn-outline" onclick="copyMarketPlan(${budget}, ${totalSpent}, ${remaining})">📋 Copy List</button>
+    </div>`;
+
+  document.getElementById('marketResults').innerHTML = html;
+  document.getElementById('marketResults').classList.remove('hidden');
+}
+
+function saveMarketPlan(budget) {
+  const plan = {
+    id: Date.now(),
+    budget,
+    date: new Date().toLocaleDateString('en-NG'),
+    items: marketCart.map(i => ({ name: i.name, emoji: i.emoji, price: i.unitPrice, priority: i.userPriority })),
+  };
+  state.savedShoppingPlans = [plan, ...state.savedShoppingPlans].slice(0, 10); // keep last 10
+  saveState();
+  showToast('Shopping plan saved! ✓', 'success');
+}
+
+function copyMarketPlan(budget, spent, remaining) {
+  const lines = [`🛒 MARKET PLAN — MealPilot`, `Budget: ₦${budget.toLocaleString()}`, ``, ...marketCart.map(i => `☐ ${i.emoji} ${i.name} — ₦${i.unitPrice.toLocaleString()} (${i.unit})`), ``, `Total: ₦${spent.toLocaleString()}`, `Remaining: ₦${remaining.toLocaleString()}`];
+  navigator.clipboard.writeText(lines.join('\n')).then(() => showToast('Copied!', 'success'));
+}
+
+// Expose for inline onclick
+window.saveMarketPlan = saveMarketPlan;
+window.copyMarketPlan = copyMarketPlan;
+
+
+// ═══════════════════════════════════════════════════════════════
+//  FEATURE 2: HEALTHY & DIET RECIPES
+// ═══════════════════════════════════════════════════════════════
+
+// Healthy recipe database
+const HEALTHY_RECIPES = [
+  // ── Nigerian Healthy Meals ──
+  {
+    id:'h1', name:'Boiled Yam & Garden Egg Sauce', emoji:'🍆', category:'Healthy & Diet',
+    dietTags:['weight-loss','low-calorie','vegetarian','diabetic'],
+    calories:320, protein:8, carbs:58, fat:6, servings:2, cookTime:30, difficulty:'Easy',
+    cost:3500,
+    ingredients:['½ yam tuber (₦3,000)','4 garden eggs (₦500)','2 tomatoes','1 onion','2 peppers','1 tsp vegetable oil','salt','seasoning'],
+    steps:[
+      'Boil yam in salted water for 20 minutes until tender. Drain.',
+      'In a separate pan, heat 1 tsp oil and sauté onion for 2 minutes.',
+      'Add diced tomatoes, peppers, and garden eggs. Crush garden eggs as they soften.',
+      'Cook sauce for 8–10 minutes. Season lightly. Serve over yam.',
+    ],
+    healthNote:'Garden egg is low-calorie and high in antioxidants. Boiling yam is far healthier than frying.',
+  },
+  {
+    id:'h2', name:'Grilled Fish & Vegetables', emoji:'🐟', category:'Healthy & Diet',
+    dietTags:['weight-loss','low-calorie','high-protein','diabetic'],
+    calories:280, protein:35, carbs:12, fat:8, servings:2, cookTime:25, difficulty:'Easy',
+    cost:6000,
+    ingredients:['2 medium tilapia (₦3,000)','carrots (₦600)','cabbage (₦800)','1 onion','lemon (₦300)','1 tsp vegetable oil','pepper soup spice','salt','thyme'],
+    steps:[
+      'Score fish with a knife. Rub with pepper soup spice, salt, thyme, and lemon juice. Marinate 10 minutes.',
+      'Grill fish on high heat or in oven at 200°C for 12–15 minutes, turning once.',
+      'While fish grills, stir-fry shredded cabbage and sliced carrots in 1 tsp oil for 5 minutes.',
+      'Serve fish with the stir-fried vegetables. Squeeze lemon on top.',
+    ],
+    healthNote:'Grilling eliminates added fats. Fish is an excellent lean protein source with omega-3s.',
+  },
+  {
+    id:'h3', name:'Moi Moi (Steamed, No Fry)', emoji:'🟤', category:'Healthy & Diet',
+    dietTags:['high-protein','high-fiber','vegetarian','diabetic'],
+    calories:220, protein:18, carbs:28, fat:5, servings:4, cookTime:60, difficulty:'Medium',
+    cost:3500,
+    ingredients:['3 cups peeled black-eyed beans (₦2,200)','2 peppers','1 onion','1 tbsp vegetable oil (reduced)','1 egg','crayfish','seasoning','salt'],
+    steps:[
+      'Blend beans smooth with peppers, onion, and minimal water.',
+      'Add just 1 tbsp oil (instead of the usual ¼ cup), crayfish, seasoning, salt. Mix well.',
+      'Pour into foil cups or leaves. Add egg slice per cup.',
+      'Steam 45–50 minutes. This version has 60% less fat than regular moi moi.',
+    ],
+    healthNote:'High plant protein, low fat. One of the most nutritious Nigerian foods when prepared with minimal oil.',
+  },
+  {
+    id:'h4', name:'Okra Soup (Light Oil)', emoji:'🫑', category:'Healthy & Diet',
+    dietTags:['low-calorie','high-fiber','weight-loss'],
+    calories:180, protein:22, carbs:10, fat:7, servings:4, cookTime:35, difficulty:'Easy',
+    cost:8000,
+    ingredients:['500g fresh okra (₦2,500)','300g chicken breast (₦1,440)','1 tbsp palm oil (reduced)','crayfish','peppers','onion','seasoning','salt'],
+    steps:[
+      'Cook chicken breast with seasoning, onion, salt. Shred. Reserve stock.',
+      'Finely chop okra.',
+      'Heat just 1 tbsp palm oil (instead of 3). Add peppers and fry 3 minutes.',
+      'Add chicken, stock, crayfish, seasoning. Boil.',
+      'Add okra. Stir. Cook uncovered 8 minutes.',
+      'Serve with eba made from less garri (reduce portion).',
+    ],
+    healthNote:'Okra is high in fiber and helps regulate blood sugar. Reducing palm oil cuts calories by ~200.',
+  },
+  {
+    id:'h5', name:'Oatmeal Swallow', emoji:'🌾', category:'Healthy & Diet',
+    dietTags:['weight-loss','high-fiber','diabetic','low-calorie'],
+    calories:210, protein:7, carbs:38, fat:4, servings:2, cookTime:10, difficulty:'Easy',
+    cost:1500,
+    ingredients:['2 cups rolled oats (₦800)','3 cups water','salt to taste'],
+    steps:[
+      'Bring water to boil in a pot.',
+      'Add oats and stir vigorously on medium-low heat.',
+      'Continue stirring for 5–7 minutes until it forms a smooth, stretchy swallow consistency.',
+      'Serve hot with any light soup (pepper soup, efo riro, or light okra).',
+    ],
+    healthNote:'Oatmeal swallow has 3× the fiber of eba. Keeps you full longer, excellent for weight loss and diabetes management.',
+  },
+  {
+    id:'h6', name:'Cabbage Stir Fry', emoji:'🥬', category:'Healthy & Diet',
+    dietTags:['weight-loss','low-calorie','vegetarian','keto'],
+    calories:120, protein:6, carbs:14, fat:5, servings:3, cookTime:15, difficulty:'Easy',
+    cost:2500,
+    ingredients:['1 medium cabbage (₦800)','carrots (₦600)','2 eggs (₦260)','1 tsp vegetable oil','onion','peppers','seasoning','salt','soy sauce optional'],
+    steps:[
+      'Shred cabbage and slice carrots thinly.',
+      'Heat oil in a wide pan. Scramble eggs, push to side.',
+      'Add onion, peppers, fry 1 minute.',
+      'Add cabbage and carrots. Toss on high heat for 5–6 minutes — keep crunchy.',
+      'Season. Serve alone or as a side dish.',
+    ],
+    healthNote:'Very low calorie, high in vitamins C and K. Excellent weight-loss side dish or light meal.',
+  },
+  {
+    id:'h7', name:'Beans & Plantain (Balanced)', emoji:'🫘', category:'Healthy & Diet',
+    dietTags:['high-protein','high-fiber','weight-loss'],
+    calories:380, protein:16, carbs:65, fat:7, servings:3, cookTime:50, difficulty:'Easy',
+    cost:4000,
+    ingredients:['2 cups brown beans (₦2,200)','1 unripe plantain (₦500)','1 tbsp palm oil','onion','peppers','seasoning','crayfish','salt'],
+    steps:[
+      'Cook beans until soft. Add palm oil, peppers, onion, crayfish, seasoning.',
+      'Slice plantain (unripe — lower sugar) into chunks. Add to beans.',
+      'Cook together for 10 more minutes.',
+      'Serve as a complete balanced meal.',
+    ],
+    healthNote:'Beans + plantain = complete protein + complex carbs. Unripe plantain has a lower glycemic index than ripe.',
+  },
+  {
+    id:'h8', name:'Chicken Pepper Soup', emoji:'🌶️', category:'Healthy & Diet',
+    dietTags:['high-protein','low-calorie','weight-loss','diabetic'],
+    calories:190, protein:30, carbs:5, fat:6, servings:3, cookTime:40, difficulty:'Easy',
+    cost:7000,
+    ingredients:['500g chicken breast (₦2,400)','pepper soup spice (₦400)','uziza leaves (₦400)','scotch bonnet','onion','crayfish','seasoning','salt'],
+    steps:[
+      'Season chicken with onion, seasoning, salt, half the pepper soup spice. Steam 10 minutes.',
+      'Add 4 cups water. Cook 20 minutes.',
+      'Add scotch bonnets, crayfish, remaining spice.',
+      'Simmer 10 minutes. Add uziza leaves. Cook 3 minutes.',
+      'Serve as a light, filling meal — no starchy side needed.',
+    ],
+    healthNote:'Under 200 calories per serving. Zero carbs. One of the most effective weight-loss Nigerian meals.',
+  },
+  {
+    id:'h9', name:'Brown Rice Jollof', emoji:'🍚', category:'Healthy & Diet',
+    dietTags:['high-fiber','diabetic','weight-loss'],
+    calories:340, protein:12, carbs:52, fat:8, servings:4, cookTime:70, difficulty:'Medium',
+    cost:9500,
+    ingredients:['1kg brown rice (₦3,500)','tomatoes','peppers','onion','3 tbsp vegetable oil (reduced)','chicken 400g (₦1,920)','seasoning','thyme','curry','salt'],
+    steps:[
+      'Brown rice takes longer — soak for 30 minutes before cooking.',
+      'Prepare tomato stew as usual but use only 3 tbsp oil instead of ½ cup.',
+      'Add brown rice and cook on low heat 45–50 minutes (longer than white rice).',
+      'Check halfway and add water if needed. Result is nuttier and more filling.',
+    ],
+    healthNote:'Brown rice has 3× the fiber of white rice, lower glycemic index, and more vitamins. Use less oil for fewer calories.',
+  },
+  {
+    id:'h10', name:'Garden Salad (Nigerian Style)', emoji:'🥗', category:'Healthy & Diet',
+    dietTags:['weight-loss','low-calorie','vegetarian','keto'],
+    calories:140, protein:7, carbs:12, fat:6, servings:2, cookTime:10, difficulty:'Easy',
+    cost:2500,
+    ingredients:['cabbage shredded (₦500)','carrots grated (₦400)','cucumber (₦500)','tomatoes (₦400)','boiled eggs (₦260)','lemon (₦200)','1 tsp olive or vegetable oil','salt','pepper'],
+    steps:[
+      'Shred cabbage, grate carrots, slice cucumber and tomatoes.',
+      'Toss all vegetables together.',
+      'Make dressing: lemon juice + oil + salt + pepper. Whisk.',
+      'Pour dressing over salad. Slice eggs on top.',
+      'Serve immediately. Add boiled chicken or tuna for more protein.',
+    ],
+    healthNote:'Zero unhealthy fats. Very low calorie. This simple salad is one of the most effective daily habits for weight loss.',
+  },
+  // ── International Meals Made in Nigeria ──
+  {
+    id:'h11', name:'Chicken Salad Bowl', emoji:'🥗', category:'Healthy & Diet',
+    dietTags:['high-protein','weight-loss','low-calorie','keto'],
+    calories:280, protein:34, carbs:10, fat:9, servings:2, cookTime:20, difficulty:'Easy',
+    cost:5500,
+    ingredients:['300g grilled chicken breast (₦1,440)','cabbage (₦500)','carrots (₦400)','cucumber (₦500)','tomatoes (₦500)','lemon juice','1 tsp vegetable oil','salt, pepper'],
+    steps:[
+      'Grill or boil chicken breast. Slice into strips.',
+      'Prepare vegetable base: shred cabbage, grate carrots, slice cucumber and tomatoes.',
+      'Dress with lemon juice, a drizzle of oil, salt, and pepper.',
+      'Top with chicken strips. Serve chilled or at room temperature.',
+    ],
+    healthNote:'High protein, very low carb. Cabbage is widely available in Nigeria as a substitute for lettuce.',
+  },
+  {
+    id:'h12', name:'Tuna Vegetable Bowl', emoji:'🐟', category:'Healthy & Diet',
+    dietTags:['high-protein','low-calorie','keto','weight-loss'],
+    calories:220, protein:28, carbs:8, fat:7, servings:2, cookTime:10, difficulty:'Easy',
+    cost:4500,
+    ingredients:['1 tin tuna in brine (₦1,500)','cabbage (₦500)','carrots (₦400)','cucumber (₦500)','1 boiled egg (₦130)','lemon juice','salt, pepper'],
+    steps:[
+      'Drain tuna. Shred cabbage, grate carrots, slice cucumber.',
+      'Mix tuna with vegetables. Add lemon juice, salt, and pepper.',
+      'Slice egg on top. Serve immediately.',
+    ],
+    healthNote:'Tinned tuna is one of the most affordable high-protein foods available in Nigerian supermarkets.',
+  },
+  {
+    id:'h13', name:'Egg & Veggie Wrap', emoji:'🌯', category:'Healthy & Diet',
+    dietTags:['high-protein','low-calorie','weight-loss'],
+    calories:260, protein:18, carbs:22, fat:10, servings:2, cookTime:15, difficulty:'Easy',
+    cost:2500,
+    ingredients:['3 eggs (₦380)','cabbage shredded (₦300)','carrots (₦300)','2 peppers','1 onion','1 tsp oil','salt','2 flatbreads or tortillas (₦600)'],
+    steps:[
+      'Scramble eggs with peppers and onion in 1 tsp oil.',
+      'Stir-fry cabbage and carrots in the same pan for 2 minutes.',
+      'Warm flatbread. Fill with egg and vegetable mixture.',
+      'Roll up and serve. Optionally add a drop of hot sauce.',
+    ],
+    healthNote:'Good protein-to-carb balance. Cabbage and carrots add fiber and crunch without extra calories.',
+  },
+  {
+    id:'h14', name:'Oat Pancakes', emoji:'🥞', category:'Healthy & Diet',
+    dietTags:['high-fiber','weight-loss','low-calorie'],
+    calories:210, protein:10, carbs:30, fat:5, servings:3, cookTime:20, difficulty:'Easy',
+    cost:1800,
+    ingredients:['2 cups rolled oats blended (₦800)','2 eggs (₦260)','1 cup milk or water (₦300)','1 ripe banana mashed (₦300)','½ tsp baking powder','1 tsp vegetable oil','cinnamon'],
+    steps:[
+      'Blend oats into flour consistency.',
+      'Mix oat flour, eggs, milk, mashed banana, baking powder, and cinnamon.',
+      'Heat a pan with minimal oil. Pour ladleful of batter. Cook 2 min per side.',
+      'Serve with honey or sliced fruit — skip the butter and syrup.',
+    ],
+    healthNote:'Oat pancakes have 40% fewer calories than regular flour pancakes and far more fiber. Banana replaces sugar.',
+  },
+  {
+    id:'h15', name:'Grilled Chicken Bowl', emoji:'🍗', category:'Healthy & Diet',
+    dietTags:['high-protein','low-calorie','keto','weight-loss'],
+    calories:300, protein:38, carbs:14, fat:8, servings:2, cookTime:30, difficulty:'Easy',
+    cost:6000,
+    ingredients:['400g chicken breast (₦1,920)','brown rice 100g (₦350)','stir-fried vegetables (cabbage, carrot, pepper)','lemon, garlic, thyme','1 tsp olive or vegetable oil','salt, pepper'],
+    steps:[
+      'Marinate chicken in lemon, garlic, thyme, salt, pepper. Grill 12–15 min.',
+      'Cook small portion of brown rice.',
+      'Stir-fry vegetables in 1 tsp oil for 5 minutes.',
+      'Assemble bowl: rice base, vegetables, grilled chicken on top.',
+    ],
+    healthNote:'Classic clean eating bowl. Protein + complex carb + vegetables in one meal.',
+  },
+  {
+    id:'h16', name:'Vegetable Omelette', emoji:'🍳', category:'Healthy & Diet',
+    dietTags:['high-protein','low-calorie','keto','vegetarian'],
+    calories:200, protein:16, carbs:6, fat:12, servings:2, cookTime:12, difficulty:'Easy',
+    cost:2000,
+    ingredients:['4 eggs (₦500)','cabbage (₦300)','carrots (₦300)','onion','peppers','1 tsp vegetable oil','salt, seasoning'],
+    steps:[
+      'Whisk eggs with salt.',
+      'Sauté onion, peppers, cabbage, and carrot in 1 tsp oil for 2 minutes.',
+      'Pour eggs over vegetables. Cook on low-medium heat.',
+      'Fold once edges are set. Serve immediately.',
+    ],
+    healthNote:'One of the fastest high-protein meals. Excellent for breakfast or a light dinner.',
+  },
+  {
+    id:'h17', name:'Baked Sweet Potatoes', emoji:'🍠', category:'Healthy & Diet',
+    dietTags:['high-fiber','weight-loss','vegetarian','diabetic'],
+    calories:160, protein:3, carbs:37, fat:0, servings:2, cookTime:45, difficulty:'Easy',
+    cost:2000,
+    ingredients:['2 medium sweet potatoes (₦1,500)','½ tsp cinnamon','salt','optional: honey drizzle'],
+    steps:[
+      'Scrub sweet potatoes clean. Prick with fork all over.',
+      'Place in oven at 200°C for 40–45 minutes until soft.',
+      'Split open. Sprinkle cinnamon and a pinch of salt.',
+      'Serve as a healthy breakfast or snack. Optionally add Greek yogurt.',
+    ],
+    healthNote:'Lower glycemic index than regular yam. No added fat. Naturally sweet and filling.',
+  },
+  {
+    id:'h18', name:'High-Protein Egg Sauce', emoji:'🥚', category:'Healthy & Diet',
+    dietTags:['high-protein','weight-loss','keto'],
+    calories:180, protein:20, carbs:8, fat:8, servings:2, cookTime:15, difficulty:'Easy',
+    cost:2500,
+    ingredients:['5 eggs (₦630)','2 tomatoes (₦600)','peppers','1 onion','1 tsp vegetable oil (reduced)','100g chicken breast cooked (₦480)','seasoning','salt'],
+    steps:[
+      'Heat 1 tsp oil — much less than usual.',
+      'Sauté onion, tomatoes, peppers 4 minutes.',
+      'Add shredded chicken breast.',
+      'Add eggs (5 instead of 3). Scramble to preferred consistency.',
+      'Serve with boiled yam or oatmeal swallow.',
+    ],
+    healthNote:'30g protein per serving. Using 5 eggs + chicken with minimal oil makes this a gym-friendly meal.',
+  },
+];
+
+// "Healthy Version" substitution map for existing meals
+const HEALTHY_SWAPS = {
+  1:  { name:'Healthy Brown Rice Jollof', swaps:['White rice → Brown rice','½ cup oil → 2 tbsp oil','Fry chicken → Grill chicken'], calSaving:'~400 cal less per pot' },
+  2:  { name:'Low-Cal Fried Rice', swaps:['White rice → Brown or cauliflower rice','3 eggs → 4 eggs, reduce oil by half','Skip soy sauce excess salt'], calSaving:'~300 cal less per serving' },
+  4:  { name:'Light White Rice & Stew', swaps:['Reduce oil in stew to 2 tbsp','Steam chicken instead of frying','Add more vegetables to stew'], calSaving:'~250 cal less per serving' },
+  6:  { name:'High-Protein Egg Sauce', swaps:['3 eggs → 5 eggs','3 tbsp oil → 1 tsp oil','Add grilled chicken breast'], calSaving:'More protein, ~120 cal less' },
+  7:  { name:'Reduced-Oil Egusi', swaps:['3 tbsp palm oil → 1 tbsp','More vegetable, less meat','Skip stockfish to reduce sodium'], calSaving:'~200 cal less per serving' },
+  19: { name:'Healthy Yam & Egg Sauce', swaps:['Boiled yam (not fried)','3 tbsp oil → 1 tsp','Add garden eggs or spinach to sauce'], calSaving:'~180 cal less' },
+};
+
+// Diet filter labels
+const DIET_FILTERS = [
+  { key:'all',         label:'All Healthy' },
+  { key:'weight-loss', label:'⚖️ Weight Loss' },
+  { key:'low-calorie', label:'🔥 Low Calorie' },
+  { key:'high-protein',label:'💪 High Protein' },
+  { key:'high-fiber',  label:'🌾 High Fiber' },
+  { key:'keto',        label:'🥑 Keto' },
+  { key:'vegetarian',  label:'🥦 Vegetarian' },
+  { key:'diabetic',    label:'🩺 Diabetic-Friendly' },
+];
+
+function renderHealthyRecipes() {
+  const activeFilter = state.dietFilter || 'all';
+  const filtered = activeFilter === 'all'
+    ? HEALTHY_RECIPES
+    : HEALTHY_RECIPES.filter(r => r.dietTags.includes(activeFilter));
+
+  const grid = document.getElementById('healthyRecipeGrid');
+  if (!grid) return;
+
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🥗</div><p>No recipes match this filter.</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(r => `
+    <div class="healthy-recipe-card" data-id="${r.id}">
+      <div class="healthy-recipe-emoji">${r.emoji}</div>
+      <div class="healthy-recipe-name">${r.name}</div>
+      <div class="healthy-recipe-tags">
+        ${r.dietTags.slice(0,2).map(t => `<span class="diet-tag">${t.replace('-',' ')}</span>`).join('')}
+      </div>
+      <div class="healthy-recipe-macros">
+        <span class="macro cal">🔥 ${r.calories} cal</span>
+        <span class="macro pro">💪 ${r.protein}g P</span>
+        <span class="macro carb">🌾 ${r.carbs}g C</span>
+        <span class="macro fat">🫒 ${r.fat}g F</span>
+      </div>
+      <div class="healthy-recipe-meta">⏱ ${r.cookTime}min · ${r.difficulty} · ${fmt(r.cost)}</div>
+    </div>`).join('');
+
+  grid.querySelectorAll('.healthy-recipe-card').forEach(card => {
+    card.addEventListener('click', () => openHealthyRecipeDetail(card.dataset.id));
+  });
+}
+
+function openHealthyRecipeDetail(id) {
+  const recipe = HEALTHY_RECIPES.find(r => r.id === id);
+  if (!recipe) return;
+
+  const html = `
+    <div class="modal-meal-header">
+      <div class="modal-meal-emoji">${recipe.emoji}</div>
+      <div class="modal-meal-name">${recipe.name}</div>
+      <div class="modal-tags">
+        <span class="modal-tag tag-green">${recipe.category}</span>
+        <span class="modal-tag tag-orange">⏱ ${recipe.cookTime}min</span>
+        <span class="modal-tag" style="background:rgba(14,122,61,0.12);color:var(--green)">${recipe.difficulty}</span>
+      </div>
+    </div>
+
+    <div class="macro-panel">
+      <div class="macro-box"><div class="macro-val">${recipe.calories}</div><div class="macro-lbl">Calories</div></div>
+      <div class="macro-box"><div class="macro-val">${recipe.protein}g</div><div class="macro-lbl">Protein</div></div>
+      <div class="macro-box"><div class="macro-val">${recipe.carbs}g</div><div class="macro-lbl">Carbs</div></div>
+      <div class="macro-box"><div class="macro-val">${recipe.fat}g</div><div class="macro-lbl">Fat</div></div>
+    </div>
+
+    <div style="background:rgba(14,122,61,0.08);border-left:3px solid var(--green);border-radius:8px;padding:10px 12px;font-size:0.8rem;color:var(--green);margin-bottom:14px">
+      💡 ${recipe.healthNote}
+    </div>
+
+    <div class="modal-section">
+      <h4>Diet Tags</h4>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+        ${recipe.dietTags.map(t=>`<span class="diet-tag large">${t.replace(/-/g,' ')}</span>`).join('')}
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <h4>Ingredients · ${fmt(recipe.cost)} · ${recipe.servings} servings</h4>
+      <ul class="modal-ingredient-list">${recipe.ingredients.map(i=>`<li>${i}</li>`).join('')}</ul>
+    </div>
+
+    <div class="modal-section">
+      <h4>Method (${recipe.cookTime} min)</h4>
+      <ol class="modal-step-list">${recipe.steps.map(s=>`<li>${s}</li>`).join('')}</ol>
+    </div>`;
+
+  openModal(html);
+}
+
+// "Healthy Version" button logic — called from existing meal detail modal
+function openHealthyVersion(mealId) {
+  const swap = HEALTHY_SWAPS[mealId];
+  const meal = getMealById(mealId);
+  if (!swap || !meal) return;
+
+  const html = `
+    <div class="modal-meal-header">
+      <div class="modal-meal-emoji">🥗</div>
+      <div class="modal-meal-name">${swap.name}</div>
+      <div class="modal-tags">
+        <span class="modal-tag tag-green">Healthy Version</span>
+        <span class="modal-tag" style="background:rgba(14,122,61,0.12);color:var(--green)">${swap.calSaving}</span>
+      </div>
+    </div>
+    <div style="background:rgba(14,122,61,0.08);border-left:3px solid var(--green);border-radius:8px;padding:12px;margin-bottom:14px">
+      <p style="font-size:0.82rem;font-weight:600;color:var(--green);margin-bottom:8px">🔄 Ingredient Swaps:</p>
+      ${swap.swaps.map(s=>`<div style="font-size:0.8rem;padding:4px 0;border-bottom:1px solid rgba(14,122,61,0.1)">${s}</div>`).join('')}
+    </div>
+    <div class="modal-section">
+      <h4>Original Recipe: ${meal.name}</h4>
+      <ul class="modal-ingredient-list">${meal.ingredients.map(i=>`<li>${capitalize(i)}</li>`).join('')}</ul>
+    </div>
+    <p style="font-size:0.75rem;color:var(--text-muted);margin-top:12px;text-align:center">Apply these substitutions to the original recipe steps. The method stays the same — only ingredients change.</p>`;
+
+  openModal(html);
+}
+
+window.openHealthyVersion = openHealthyVersion;
