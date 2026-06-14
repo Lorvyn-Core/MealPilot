@@ -1532,56 +1532,14 @@ function renderRecipeCards(recipes) {
 }
 
 function filterRecipeCards() {
-  const q = document.getElementById('recipeSearchInput').value.toLowerCase().trim();
+  const q = document.getElementById('recipeSearchInput').value.toLowerCase();
   const cat = document.querySelector('#recipeCategoryFilter .chip.active')?.dataset.cat || 'all';
 
-  // If 'Healthy & Diet' tab is active, search within healthy recipes
+  // If 'Healthy & Diet' tab is active, delegate to renderHealthyRecipes
   if (cat === 'Healthy & Diet') {
     document.getElementById('recipeCardsGrid').classList.add('hidden');
     const healthySec = document.getElementById('healthyRecipeSection');
     if (healthySec) healthySec.classList.remove('hidden');
-
-    // Only search if user has paid access (grid is visible)
-    const healthyGrid = document.getElementById('healthyRecipeGrid');
-    if (!healthyGrid || healthyGrid.classList.contains('hidden')) return;
-
-    const activeFilter = state.dietFilter || 'all';
-    let filtered = activeFilter === 'all'
-      ? HEALTHY_RECIPES
-      : HEALTHY_RECIPES.filter(r => r.dietTags.includes(activeFilter));
-
-    // Apply search query on top of diet filter
-    if (q) {
-      filtered = filtered.filter(r =>
-        r.name.toLowerCase().includes(q) ||
-        r.dietTags.some(t => t.toLowerCase().includes(q))
-      );
-    }
-
-    if (!filtered.length) {
-      healthyGrid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🥗</div><p>No healthy recipes match "${q}".</p></div>`;
-      return;
-    }
-
-    healthyGrid.innerHTML = filtered.map(r => `
-      <div class="healthy-recipe-card" data-id="${r.id}">
-        <div class="healthy-recipe-emoji">${r.emoji}</div>
-        <div class="healthy-recipe-name">${r.name}</div>
-        <div class="healthy-recipe-tags">
-          ${r.dietTags.slice(0,2).map(t => `<span class="diet-tag">${t.replace('-',' ')}</span>`).join('')}
-        </div>
-        <div class="healthy-recipe-macros">
-          <span class="macro cal">🔥 ${r.calories} cal</span>
-          <span class="macro pro">💪 ${r.protein}g P</span>
-          <span class="macro carb">🌾 ${r.carbs}g C</span>
-          <span class="macro fat">🫒 ${r.fat}g F</span>
-        </div>
-        <div class="healthy-recipe-meta">⏱ ${r.cookTime}min · ${r.difficulty} · ${fmt(r.cost)}</div>
-      </div>`).join('');
-
-    healthyGrid.querySelectorAll('.healthy-recipe-card').forEach(card => {
-      card.addEventListener('click', () => openHealthyRecipeDetail(card.dataset.id));
-    });
     return;
   }
 
@@ -1935,10 +1893,6 @@ function init() {
   });
 
   document.getElementById('recipeSearchInput').addEventListener('input', filterRecipeCards);
-  document.getElementById('recipeSearchInput').addEventListener('keydown', e => { if (e.key === 'Enter') filterRecipeCards(); });
-  // Make the 🔍 icon clickable as a search button
-  const recipeSearchIcon = document.querySelector('#sec-recipes .search-icon');
-  if (recipeSearchIcon) recipeSearchIcon.addEventListener('click', filterRecipeCards);
   document.querySelectorAll('#recipeCategoryFilter .chip').forEach(chip => {
     chip.addEventListener('click', () => {
       document.querySelectorAll('#recipeCategoryFilter .chip').forEach(c=>c.classList.remove('active'));
@@ -2108,32 +2062,117 @@ function renderMarketPlanner() {
 
 function calculateMarketBudget() {
   const budget = Number(document.getElementById('marketBudgetInput').value);
-  if (!budget || budget < 200) { showToast('Enter a budget amount (min ₦200)'); return; }
+  if (!budget || budget < 200) { showToast('Enter a budget amount (min \u20a6200)'); return; }
   if (!marketCart.length) { showToast('Add at least one item to your list'); return; }
+
+  const adults   = Math.max(1, Number(document.getElementById('marketAdults').value)   || 1);
+  const children = Math.max(0, Number(document.getElementById('marketChildren').value) || 0);
+  const days     = Number(document.getElementById('marketDuration').value) || 7;
+
+  // Each child counts as 0.6 of an adult for food quantity scaling
+  const peopleUnits = adults + (children * 0.6);
+
+  // Base unit prices are for 1 person / ~3-4 days. Scale by people and duration.
+  // Base duration assumed = 3 days per unit. Scale factor = (peopleUnits * days) / 3
+  const scaleFactor = (peopleUnits * days) / 3;
 
   // Sort: high priority first, then medium, then optional
   const priorityOrder = { high: 0, medium: 1, low: 2 };
   const sorted = [...marketCart].sort((a,b) => priorityOrder[a.userPriority] - priorityOrder[b.userPriority]);
 
+  // Scale each item's required amount by family size & duration
+  const scaled = sorted.map(item => ({
+    ...item,
+    scaledPrice: Math.round(item.unitPrice * scaleFactor),
+    units: Math.max(1, Math.round(scaleFactor)),
+  }));
+
+  // Phase 1: Allocate full scaled amounts to high & medium items
+  // Phase 2: Use leftover budget to top up optional items
+  // Phase 3: If budget too small even for high priority, proportionally split what's there
+
+  const totalNeeded = scaled.reduce((s, i) => s + i.scaledPrice, 0);
+
   let remaining = budget;
   const included = [];
   const excluded = [];
 
-  // Greedy allocation: fit items in priority order
-  for (const item of sorted) {
-    if (remaining >= item.unitPrice) {
-      included.push({ ...item, allocated: item.unitPrice });
-      remaining -= item.unitPrice;
-    } else if (remaining > 0 && item.userPriority === 'high') {
-      // Partial entry for high-priority items we can't fully afford
-      included.push({ ...item, allocated: remaining, partial: true });
-      remaining = 0;
+  if (budget >= totalNeeded) {
+    // Budget covers everything — allocate full amounts, show surplus
+    scaled.forEach(item => {
+      included.push({ ...item, allocated: item.scaledPrice, partial: false });
+    });
+    remaining = budget - totalNeeded;
+  } else {
+    // Budget is tight — priority-based proportional spread
+    // Step 1: Guarantee high priority items first
+    const highItems   = scaled.filter(i => i.userPriority === 'high');
+    const medItems    = scaled.filter(i => i.userPriority === 'medium');
+    const lowItems    = scaled.filter(i => i.userPriority === 'low');
+
+    const highTotal = highItems.reduce((s,i) => s + i.scaledPrice, 0);
+    const medTotal  = medItems.reduce((s,i)  => s + i.scaledPrice, 0);
+
+    if (remaining >= highTotal) {
+      // Can fully cover all high priority
+      highItems.forEach(item => {
+        included.push({ ...item, allocated: item.scaledPrice, partial: false });
+        remaining -= item.scaledPrice;
+      });
+
+      if (remaining >= medTotal) {
+        // Can also cover medium
+        medItems.forEach(item => {
+          included.push({ ...item, allocated: item.scaledPrice, partial: false });
+          remaining -= item.scaledPrice;
+        });
+        // Spread leftover on optional items proportionally
+        const lowTotal = lowItems.reduce((s,i) => s + i.scaledPrice, 0);
+        if (remaining > 0 && lowItems.length) {
+          const ratio = Math.min(1, remaining / lowTotal);
+          lowItems.forEach(item => {
+            const alloc = Math.round(item.scaledPrice * ratio);
+            if (alloc >= item.unitPrice) {
+              included.push({ ...item, allocated: alloc, partial: alloc < item.scaledPrice });
+            } else {
+              excluded.push(item);
+            }
+          });
+          remaining = Math.max(0, remaining - Math.min(remaining, lowTotal));
+        } else {
+          lowItems.forEach(i => excluded.push(i));
+        }
+      } else {
+        // Spread remaining budget proportionally across medium items
+        const ratio = remaining / medTotal;
+        medItems.forEach(item => {
+          const alloc = Math.round(item.scaledPrice * ratio);
+          if (alloc >= item.unitPrice) {
+            included.push({ ...item, allocated: alloc, partial: true });
+          } else {
+            excluded.push(item);
+          }
+        });
+        remaining = 0;
+        lowItems.forEach(i => excluded.push(i));
+      }
     } else {
-      excluded.push(item);
+      // Can't even fully cover high priority — spread proportionally
+      const ratio = remaining / highTotal;
+      highItems.forEach(item => {
+        const alloc = Math.round(item.scaledPrice * ratio);
+        if (alloc >= item.unitPrice) {
+          included.push({ ...item, allocated: alloc, partial: true });
+        } else {
+          excluded.push(item);
+        }
+      });
+      remaining = 0;
+      [...medItems, ...lowItems].forEach(i => excluded.push(i));
     }
   }
 
-  const totalSpent = budget - remaining;
+  const totalSpent = included.reduce((s,i) => s + i.allocated, 0);
   const pct = Math.min(100, Math.round((totalSpent / budget) * 100));
 
   // Build breakdown bars
@@ -2141,85 +2180,111 @@ function calculateMarketBudget() {
   included.forEach(i => { catTotals[i.category] = (catTotals[i.category] || 0) + i.allocated; });
   const maxCat = Math.max(...Object.values(catTotals), 1);
 
-  const html = `
+  const durationLabel = { 1:'1 day', 3:'3 days', 7:'1 week', 14:'2 weeks', 30:'1 month' }[days] || `${days} days`;
+  const familyLabel = adults + children === 1 ? '1 person' : `${adults} adult${adults>1?'s':''}`+ (children ? ` + ${children} child${children>1?'ren':''}` : '');
+
+  const surplusNote = remaining > 0
+    ? `<div style="background:rgba(14,122,61,0.1);border-left:3px solid var(--green);border-radius:8px;padding:10px 12px;font-size:0.8rem;color:var(--green);margin-bottom:12px">
+        ✅ Your budget covers everything! <strong>${fmt(remaining)}</strong> left over — consider adding more items or saving it.
+      </div>`
+    : '';
+
+  const html = \`
+    <div style="background:rgba(14,122,61,0.08);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:0.8rem;color:var(--text-muted)">
+      👨‍👩‍👧 <strong style="color:var(--text)">\${familyLabel}</strong> · 📅 <strong style="color:var(--text)">\${durationLabel}</strong> · Scale: <strong style="color:var(--text)">\${scaleFactor.toFixed(1)}x</strong> base quantities
+    </div>
+
     <div class="market-result-header">
-      <div class="market-result-budget">Budget: <strong>${fmt(budget)}</strong></div>
-      <div class="market-result-spent">Spending: <strong>${fmt(totalSpent)}</strong></div>
-      <div class="market-result-remaining ${remaining > 0 ? 'positive' : 'zero'}">Remaining: <strong>${fmt(remaining)}</strong></div>
+      <div class="market-result-budget">Budget: <strong>\${fmt(budget)}</strong></div>
+      <div class="market-result-spent">Allocated: <strong>\${fmt(totalSpent)}</strong></div>
+      <div class="market-result-remaining \${remaining > 0 ? 'positive' : 'zero'}">Unspent: <strong>\${fmt(remaining)}</strong></div>
     </div>
 
     <div class="market-progress-wrap">
       <div class="market-progress-bar">
-        <div class="market-progress-fill" style="width:${pct}%"></div>
+        <div class="market-progress-fill" style="width:\${pct}%"></div>
       </div>
-      <div class="market-progress-label">${pct}% of budget allocated</div>
+      <div class="market-progress-label">\${pct}% of budget allocated</div>
     </div>
 
-    <h4 style="margin:14px 0 8px;font-size:0.88rem">✅ Recommended Shopping Plan</h4>
+    \${surplusNote}
+
+    <h4 style="margin:14px 0 8px;font-size:0.88rem">✅ Smart Shopping Plan for \${familyLabel}</h4>
     <div class="market-plan-list">
-      ${included.map(item => {
+      \${included.map(item => {
         const itemPct = Math.round((item.allocated / budget) * 100);
-        return `
+        const unitsNote = item.units > 1 ? \` × \${item.units}\` : '';
+        return \`
           <div class="market-plan-row">
-            <span class="market-plan-emoji">${item.emoji}</span>
+            <span class="market-plan-emoji">\${item.emoji}</span>
             <div class="market-plan-info">
-              <span class="market-plan-name">${item.name}${item.partial ? ' <span class="partial-tag">partial</span>':''}</span>
-              <span class="market-plan-unit">${item.unit}</span>
+              <span class="market-plan-name">\${item.name}\${item.partial ? ' <span class="partial-tag">partial</span>':''}</span>
+              <span class="market-plan-unit">\${item.unit}\${unitsNote}</span>
             </div>
             <div class="market-plan-right">
-              <span class="market-plan-price">${fmt(item.allocated)}</span>
+              <span class="market-plan-price">\${fmt(item.allocated)}</span>
               <div class="market-plan-bar-wrap">
-                <div class="market-plan-bar" style="width:${itemPct}%"></div>
+                <div class="market-plan-bar" style="width:\${itemPct}%"></div>
               </div>
-              <span class="market-plan-pct">${itemPct}%</span>
+              <span class="market-plan-pct">\${itemPct}%</span>
             </div>
-          </div>`;
+          </div>\`;
       }).join('')}
     </div>
 
-    ${excluded.length ? `
+    \${excluded.length ? \`
       <div class="market-excluded">
-        <h4 style="font-size:0.82rem;margin-bottom:6px;color:var(--orange-dark)">⚠️ Budget too small for these items:</h4>
-        ${excluded.map(i => `<span class="market-excluded-chip">${i.emoji} ${i.name} (${fmt(i.unitPrice)})</span>`).join('')}
-      </div>` : ''}
+        <h4 style="font-size:0.82rem;margin-bottom:6px;color:var(--orange-dark)">⚠️ Budget too tight for these items:</h4>
+        \${excluded.map(i => \`<span class="market-excluded-chip">\${i.emoji} \${i.name} (\${fmt(i.scaledPrice)} for \${familyLabel})</span>\`).join('')}
+      </div>\` : ''}
 
     <div class="market-cat-breakdown">
       <h4 style="font-size:0.82rem;margin-bottom:8px">📊 Category Breakdown</h4>
-      ${Object.entries(catTotals).map(([cat, val]) => `
+      \${Object.entries(catTotals).map(([cat, val]) => \`
         <div class="mini-bar-row">
-          <span class="mini-bar-label">${cat}</span>
-          <div class="mini-bar-track"><div class="mini-bar-fill" style="width:${Math.round((val/maxCat)*100)}%"></div></div>
-          <span class="mini-bar-val">${fmt(val)}</span>
-        </div>`).join('')}
+          <span class="mini-bar-label">\${cat}</span>
+          <div class="mini-bar-track"><div class="mini-bar-fill" style="width:\${Math.round((val/maxCat)*100)}%"></div></div>
+          <span class="mini-bar-val">\${fmt(val)}</span>
+        </div>\`).join('')}
     </div>
 
     <div class="market-plan-actions">
-      <button class="btn btn-sm btn-primary" onclick="saveMarketPlan(${budget})">💾 Save Plan</button>
-      <button class="btn btn-sm btn-outline" onclick="copyMarketPlan(${budget}, ${totalSpent}, ${remaining})">📋 Copy List</button>
-    </div>`;
+      <button class="btn btn-sm btn-primary" onclick="saveMarketPlan(\${budget}, \${adults}, \${children}, \${days})">💾 Save Plan</button>
+      <button class="btn btn-sm btn-outline" onclick="copyMarketPlan(\${budget}, \${totalSpent}, \${remaining}, \${adults}, \${children}, \${days})">📋 Copy List</button>
+    </div>\`;
 
   document.getElementById('marketResults').innerHTML = html;
   document.getElementById('marketResults').classList.remove('hidden');
 }
 
-function saveMarketPlan(budget) {
+function saveMarketPlan(budget, adults=1, children=0, days=7) {
   const plan = {
     id: Date.now(),
-    budget,
+    budget, adults, children, days,
     date: new Date().toLocaleDateString('en-NG'),
     items: marketCart.map(i => ({ name: i.name, emoji: i.emoji, price: i.unitPrice, priority: i.userPriority })),
   };
-  state.savedShoppingPlans = [plan, ...state.savedShoppingPlans].slice(0, 10); // keep last 10
+  state.savedShoppingPlans = [plan, ...state.savedShoppingPlans].slice(0, 10);
   saveState();
   showToast('Shopping plan saved! ✓', 'success');
 }
 
-function copyMarketPlan(budget, spent, remaining) {
-  const lines = [`🛒 MARKET PLAN — MealPilot`, `Budget: ₦${budget.toLocaleString()}`, ``, ...marketCart.map(i => `☐ ${i.emoji} ${i.name} — ₦${i.unitPrice.toLocaleString()} (${i.unit})`), ``, `Total: ₦${spent.toLocaleString()}`, `Remaining: ₦${remaining.toLocaleString()}`];
+function copyMarketPlan(budget, spent, remaining, adults=1, children=0, days=7) {
+  const durationLabel = {1:'1 day',3:'3 days',7:'1 week',14:'2 weeks',30:'1 month'}[days] || days+' days';
+  const familyLabel = adults + children === 1 ? '1 person' : adults+' adult'+(adults>1?'s':'')+(children?' + '+children+' child'+(children>1?'ren':''):'');
+  const lines = [
+    '🛒 MARKET PLAN — MealPilot',
+    'Family: ' + familyLabel + ' · Duration: ' + durationLabel,
+    'Budget: ₦' + budget.toLocaleString(),
+    '',
+    ...marketCart.map(i => '☐ ' + i.emoji + ' ' + i.name + ' — ₦' + i.unitPrice.toLocaleString() + ' (' + i.unit + ')'),
+    '',
+    'Allocated: ₦' + spent.toLocaleString(),
+    'Remaining: ₦' + remaining.toLocaleString()
+  ];
   navigator.clipboard.writeText(lines.join('\n')).then(() => showToast('Copied!', 'success'));
 }
 
-// Expose for inline onclick
 window.saveMarketPlan = saveMarketPlan;
 window.copyMarketPlan = copyMarketPlan;
 
