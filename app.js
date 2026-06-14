@@ -2065,68 +2065,47 @@ function calculateMarketBudget() {
   if (!budget || budget < 200) { showToast('Enter a budget amount (min \u20a6200)'); return; }
   if (!marketCart.length) { showToast('Add at least one item to your list'); return; }
 
-  const adults   = Math.max(1, Number(document.getElementById('marketAdults').value)   || 1);
+  const adults   = Math.max(1, Number(document.getElementById('marketAdults').value) || 1);
   const children = Math.max(0, Number(document.getElementById('marketChildren').value) || 0);
   const days     = Number(document.getElementById('marketDuration').value) || 7;
 
-  // Each child counts as 0.6 of an adult for food quantity scaling
   const peopleUnits = adults + (children * 0.6);
-
-  // Base unit prices are for 1 person / ~3-4 days. Scale by people and duration.
-  // Base duration assumed = 3 days per unit. Scale factor = (peopleUnits * days) / 3
   const scaleFactor = (peopleUnits * days) / 3;
 
-  // Sort: high priority first, then medium, then optional
   const priorityOrder = { high: 0, medium: 1, low: 2 };
   const sorted = [...marketCart].sort((a,b) => priorityOrder[a.userPriority] - priorityOrder[b.userPriority]);
 
-  // Scale each item's required amount by family size & duration
   const scaled = sorted.map(item => ({
     ...item,
     scaledPrice: Math.round(item.unitPrice * scaleFactor),
     units: Math.max(1, Math.round(scaleFactor)),
   }));
 
-  // Phase 1: Allocate full scaled amounts to high & medium items
-  // Phase 2: Use leftover budget to top up optional items
-  // Phase 3: If budget too small even for high priority, proportionally split what's there
-
   const totalNeeded = scaled.reduce((s, i) => s + i.scaledPrice, 0);
-
   let remaining = budget;
   const included = [];
   const excluded = [];
 
   if (budget >= totalNeeded) {
-    // Budget covers everything — allocate full amounts, show surplus
-    scaled.forEach(item => {
-      included.push({ ...item, allocated: item.scaledPrice, partial: false });
-    });
+    scaled.forEach(item => included.push({ ...item, allocated: item.scaledPrice, partial: false }));
     remaining = budget - totalNeeded;
   } else {
-    // Budget is tight — priority-based proportional spread
-    // Step 1: Guarantee high priority items first
-    const highItems   = scaled.filter(i => i.userPriority === 'high');
-    const medItems    = scaled.filter(i => i.userPriority === 'medium');
-    const lowItems    = scaled.filter(i => i.userPriority === 'low');
-
+    const highItems = scaled.filter(i => i.userPriority === 'high');
+    const medItems  = scaled.filter(i => i.userPriority === 'medium');
+    const lowItems  = scaled.filter(i => i.userPriority === 'low');
     const highTotal = highItems.reduce((s,i) => s + i.scaledPrice, 0);
     const medTotal  = medItems.reduce((s,i)  => s + i.scaledPrice, 0);
 
     if (remaining >= highTotal) {
-      // Can fully cover all high priority
       highItems.forEach(item => {
         included.push({ ...item, allocated: item.scaledPrice, partial: false });
         remaining -= item.scaledPrice;
       });
-
       if (remaining >= medTotal) {
-        // Can also cover medium
         medItems.forEach(item => {
           included.push({ ...item, allocated: item.scaledPrice, partial: false });
           remaining -= item.scaledPrice;
         });
-        // Spread leftover on optional items proportionally
         const lowTotal = lowItems.reduce((s,i) => s + i.scaledPrice, 0);
         if (remaining > 0 && lowItems.length) {
           const ratio = Math.min(1, remaining / lowTotal);
@@ -2143,7 +2122,6 @@ function calculateMarketBudget() {
           lowItems.forEach(i => excluded.push(i));
         }
       } else {
-        // Spread remaining budget proportionally across medium items
         const ratio = remaining / medTotal;
         medItems.forEach(item => {
           const alloc = Math.round(item.scaledPrice * ratio);
@@ -2157,7 +2135,6 @@ function calculateMarketBudget() {
         lowItems.forEach(i => excluded.push(i));
       }
     } else {
-      // Can't even fully cover high priority — spread proportionally
       const ratio = remaining / highTotal;
       highItems.forEach(item => {
         const alloc = Math.round(item.scaledPrice * ratio);
@@ -2174,84 +2151,78 @@ function calculateMarketBudget() {
 
   const totalSpent = included.reduce((s,i) => s + i.allocated, 0);
   const pct = Math.min(100, Math.round((totalSpent / budget) * 100));
-
-  // Build breakdown bars
   const catTotals = {};
   included.forEach(i => { catTotals[i.category] = (catTotals[i.category] || 0) + i.allocated; });
   const maxCat = Math.max(...Object.values(catTotals), 1);
 
-  const durationLabel = { 1:'1 day', 3:'3 days', 7:'1 week', 14:'2 weeks', 30:'1 month' }[days] || `${days} days`;
-  const familyLabel = adults + children === 1 ? '1 person' : `${adults} adult${adults>1?'s':''}`+ (children ? ` + ${children} child${children>1?'ren':''}` : '');
+  const durationLabel = ({1:'1 day', 3:'3 days', 7:'1 week', 14:'2 weeks', 30:'1 month'})[days] || (days + ' days');
+  const familyLabel = (adults + children === 1)
+    ? '1 person'
+    : adults + ' adult' + (adults > 1 ? 's' : '') + (children ? ' + ' + children + ' child' + (children > 1 ? 'ren' : '') : '');
 
   const surplusNote = remaining > 0
-    ? `<div style="background:rgba(14,122,61,0.1);border-left:3px solid var(--green);border-radius:8px;padding:10px 12px;font-size:0.8rem;color:var(--green);margin-bottom:12px">
-        ✅ Your budget covers everything! <strong>${fmt(remaining)}</strong> left over — consider adding more items or saving it.
-      </div>`
+    ? '<div style="background:rgba(14,122,61,0.1);border-left:3px solid var(--green);border-radius:8px;padding:10px 12px;font-size:0.8rem;color:var(--green);margin-bottom:12px">'
+      + '\u2705 Your budget covers everything! <strong>' + fmt(remaining) + '</strong> left over \u2014 consider adding more items or saving it.'
+      + '</div>'
     : '';
 
-  const html = \`
-    <div style="background:rgba(14,122,61,0.08);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:0.8rem;color:var(--text-muted)">
-      👨‍👩‍👧 <strong style="color:var(--text)">\${familyLabel}</strong> · 📅 <strong style="color:var(--text)">\${durationLabel}</strong> · Scale: <strong style="color:var(--text)">\${scaleFactor.toFixed(1)}x</strong> base quantities
-    </div>
+  const itemRows = included.map(function(item) {
+    const itemPct = Math.round((item.allocated / budget) * 100);
+    const unitsNote = item.units > 1 ? ' \u00d7 ' + item.units : '';
+    const partialTag = item.partial ? ' <span class="partial-tag">partial</span>' : '';
+    return '<div class="market-plan-row">'
+      + '<span class="market-plan-emoji">' + item.emoji + '</span>'
+      + '<div class="market-plan-info">'
+      + '<span class="market-plan-name">' + item.name + partialTag + '</span>'
+      + '<span class="market-plan-unit">' + item.unit + unitsNote + '</span>'
+      + '</div>'
+      + '<div class="market-plan-right">'
+      + '<span class="market-plan-price">' + fmt(item.allocated) + '</span>'
+      + '<div class="market-plan-bar-wrap"><div class="market-plan-bar" style="width:' + itemPct + '%"></div></div>'
+      + '<span class="market-plan-pct">' + itemPct + '%</span>'
+      + '</div>'
+      + '</div>';
+  }).join('');
 
-    <div class="market-result-header">
-      <div class="market-result-budget">Budget: <strong>\${fmt(budget)}</strong></div>
-      <div class="market-result-spent">Allocated: <strong>\${fmt(totalSpent)}</strong></div>
-      <div class="market-result-remaining \${remaining > 0 ? 'positive' : 'zero'}">Unspent: <strong>\${fmt(remaining)}</strong></div>
-    </div>
+  const excludedBlock = excluded.length
+    ? '<div class="market-excluded"><h4 style="font-size:0.82rem;margin-bottom:6px;color:var(--orange-dark)">\u26a0\ufe0f Budget too tight for these items:</h4>'
+      + excluded.map(function(i) { return '<span class="market-excluded-chip">' + i.emoji + ' ' + i.name + ' (' + fmt(i.scaledPrice) + ' for ' + familyLabel + ')</span>'; }).join('')
+      + '</div>'
+    : '';
 
-    <div class="market-progress-wrap">
-      <div class="market-progress-bar">
-        <div class="market-progress-fill" style="width:\${pct}%"></div>
-      </div>
-      <div class="market-progress-label">\${pct}% of budget allocated</div>
-    </div>
+  const catBreakdown = Object.entries(catTotals).map(function(entry) {
+    var cat = entry[0], val = entry[1];
+    return '<div class="mini-bar-row">'
+      + '<span class="mini-bar-label">' + cat + '</span>'
+      + '<div class="mini-bar-track"><div class="mini-bar-fill" style="width:' + Math.round((val/maxCat)*100) + '%"></div></div>'
+      + '<span class="mini-bar-val">' + fmt(val) + '</span>'
+      + '</div>';
+  }).join('');
 
-    \${surplusNote}
-
-    <h4 style="margin:14px 0 8px;font-size:0.88rem">✅ Smart Shopping Plan for \${familyLabel}</h4>
-    <div class="market-plan-list">
-      \${included.map(item => {
-        const itemPct = Math.round((item.allocated / budget) * 100);
-        const unitsNote = item.units > 1 ? \` × \${item.units}\` : '';
-        return \`
-          <div class="market-plan-row">
-            <span class="market-plan-emoji">\${item.emoji}</span>
-            <div class="market-plan-info">
-              <span class="market-plan-name">\${item.name}\${item.partial ? ' <span class="partial-tag">partial</span>':''}</span>
-              <span class="market-plan-unit">\${item.unit}\${unitsNote}</span>
-            </div>
-            <div class="market-plan-right">
-              <span class="market-plan-price">\${fmt(item.allocated)}</span>
-              <div class="market-plan-bar-wrap">
-                <div class="market-plan-bar" style="width:\${itemPct}%"></div>
-              </div>
-              <span class="market-plan-pct">\${itemPct}%</span>
-            </div>
-          </div>\`;
-      }).join('')}
-    </div>
-
-    \${excluded.length ? \`
-      <div class="market-excluded">
-        <h4 style="font-size:0.82rem;margin-bottom:6px;color:var(--orange-dark)">⚠️ Budget too tight for these items:</h4>
-        \${excluded.map(i => \`<span class="market-excluded-chip">\${i.emoji} \${i.name} (\${fmt(i.scaledPrice)} for \${familyLabel})</span>\`).join('')}
-      </div>\` : ''}
-
-    <div class="market-cat-breakdown">
-      <h4 style="font-size:0.82rem;margin-bottom:8px">📊 Category Breakdown</h4>
-      \${Object.entries(catTotals).map(([cat, val]) => \`
-        <div class="mini-bar-row">
-          <span class="mini-bar-label">\${cat}</span>
-          <div class="mini-bar-track"><div class="mini-bar-fill" style="width:\${Math.round((val/maxCat)*100)}%"></div></div>
-          <span class="mini-bar-val">\${fmt(val)}</span>
-        </div>\`).join('')}
-    </div>
-
-    <div class="market-plan-actions">
-      <button class="btn btn-sm btn-primary" onclick="saveMarketPlan(\${budget}, \${adults}, \${children}, \${days})">💾 Save Plan</button>
-      <button class="btn btn-sm btn-outline" onclick="copyMarketPlan(\${budget}, \${totalSpent}, \${remaining}, \${adults}, \${children}, \${days})">📋 Copy List</button>
-    </div>\`;
+  const html = ''
+    + '<div style="background:rgba(14,122,61,0.08);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:0.8rem;color:var(--text-muted)">'
+    + '\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc67 <strong style="color:var(--text)">' + familyLabel + '</strong>'
+    + ' \u00b7 \ud83d\udcc5 <strong style="color:var(--text)">' + durationLabel + '</strong>'
+    + ' \u00b7 Scale: <strong style="color:var(--text)">' + scaleFactor.toFixed(1) + 'x</strong> base quantities'
+    + '</div>'
+    + '<div class="market-result-header">'
+    + '<div class="market-result-budget">Budget: <strong>' + fmt(budget) + '</strong></div>'
+    + '<div class="market-result-spent">Allocated: <strong>' + fmt(totalSpent) + '</strong></div>'
+    + '<div class="market-result-remaining ' + (remaining > 0 ? 'positive' : 'zero') + '">Unspent: <strong>' + fmt(remaining) + '</strong></div>'
+    + '</div>'
+    + '<div class="market-progress-wrap">'
+    + '<div class="market-progress-bar"><div class="market-progress-fill" style="width:' + pct + '%"></div></div>'
+    + '<div class="market-progress-label">' + pct + '% of budget allocated</div>'
+    + '</div>'
+    + surplusNote
+    + '<h4 style="margin:14px 0 8px;font-size:0.88rem">\u2705 Smart Shopping Plan for ' + familyLabel + '</h4>'
+    + '<div class="market-plan-list">' + itemRows + '</div>'
+    + excludedBlock
+    + '<div class="market-cat-breakdown"><h4 style="font-size:0.82rem;margin-bottom:8px">\ud83d\udcca Category Breakdown</h4>' + catBreakdown + '</div>'
+    + '<div class="market-plan-actions">'
+    + '<button class="btn btn-sm btn-primary" onclick="saveMarketPlan(' + budget + ',' + adults + ',' + children + ',' + days + ')">\ud83d\udcbe Save Plan</button>'
+    + '<button class="btn btn-sm btn-outline" onclick="copyMarketPlan(' + budget + ',' + totalSpent + ',' + remaining + ',' + adults + ',' + children + ',' + days + ')">\ud83d\udccb Copy List</button>'
+    + '</div>';
 
   document.getElementById('marketResults').innerHTML = html;
   document.getElementById('marketResults').classList.remove('hidden');
