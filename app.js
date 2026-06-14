@@ -1532,14 +1532,56 @@ function renderRecipeCards(recipes) {
 }
 
 function filterRecipeCards() {
-  const q = document.getElementById('recipeSearchInput').value.toLowerCase();
+  const q = document.getElementById('recipeSearchInput').value.toLowerCase().trim();
   const cat = document.querySelector('#recipeCategoryFilter .chip.active')?.dataset.cat || 'all';
 
-  // If 'Healthy & Diet' tab is active, delegate to renderHealthyRecipes
+  // If 'Healthy & Diet' tab is active, search within healthy recipes
   if (cat === 'Healthy & Diet') {
     document.getElementById('recipeCardsGrid').classList.add('hidden');
     const healthySec = document.getElementById('healthyRecipeSection');
     if (healthySec) healthySec.classList.remove('hidden');
+
+    // Only search if user has paid access (grid is visible)
+    const healthyGrid = document.getElementById('healthyRecipeGrid');
+    if (!healthyGrid || healthyGrid.classList.contains('hidden')) return;
+
+    const activeFilter = state.dietFilter || 'all';
+    let filtered = activeFilter === 'all'
+      ? HEALTHY_RECIPES
+      : HEALTHY_RECIPES.filter(r => r.dietTags.includes(activeFilter));
+
+    // Apply search query on top of diet filter
+    if (q) {
+      filtered = filtered.filter(r =>
+        r.name.toLowerCase().includes(q) ||
+        r.dietTags.some(t => t.toLowerCase().includes(q))
+      );
+    }
+
+    if (!filtered.length) {
+      healthyGrid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🥗</div><p>No healthy recipes match "${q}".</p></div>`;
+      return;
+    }
+
+    healthyGrid.innerHTML = filtered.map(r => `
+      <div class="healthy-recipe-card" data-id="${r.id}">
+        <div class="healthy-recipe-emoji">${r.emoji}</div>
+        <div class="healthy-recipe-name">${r.name}</div>
+        <div class="healthy-recipe-tags">
+          ${r.dietTags.slice(0,2).map(t => `<span class="diet-tag">${t.replace('-',' ')}</span>`).join('')}
+        </div>
+        <div class="healthy-recipe-macros">
+          <span class="macro cal">🔥 ${r.calories} cal</span>
+          <span class="macro pro">💪 ${r.protein}g P</span>
+          <span class="macro carb">🌾 ${r.carbs}g C</span>
+          <span class="macro fat">🫒 ${r.fat}g F</span>
+        </div>
+        <div class="healthy-recipe-meta">⏱ ${r.cookTime}min · ${r.difficulty} · ${fmt(r.cost)}</div>
+      </div>`).join('');
+
+    healthyGrid.querySelectorAll('.healthy-recipe-card').forEach(card => {
+      card.addEventListener('click', () => openHealthyRecipeDetail(card.dataset.id));
+    });
     return;
   }
 
@@ -1893,6 +1935,10 @@ function init() {
   });
 
   document.getElementById('recipeSearchInput').addEventListener('input', filterRecipeCards);
+  document.getElementById('recipeSearchInput').addEventListener('keydown', e => { if (e.key === 'Enter') filterRecipeCards(); });
+  // Make the 🔍 icon clickable as a search button
+  const recipeSearchIcon = document.querySelector('#sec-recipes .search-icon');
+  if (recipeSearchIcon) recipeSearchIcon.addEventListener('click', filterRecipeCards);
   document.querySelectorAll('#recipeCategoryFilter .chip').forEach(chip => {
     chip.addEventListener('click', () => {
       document.querySelectorAll('#recipeCategoryFilter .chip').forEach(c=>c.classList.remove('active'));
